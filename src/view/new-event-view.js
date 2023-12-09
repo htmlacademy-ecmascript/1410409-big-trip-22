@@ -1,6 +1,5 @@
 import {createElement} from '../render';
 
-
 function createNewEventTemplate() {
   return (
     `<form class="event event--edit" action="#" method="post">
@@ -166,7 +165,7 @@ function createNewEventTemplate() {
   );
 }
 
-export default class EventNewView {
+export default class NewEventView {
   getTemplate() {
     return createNewEventTemplate();
   }

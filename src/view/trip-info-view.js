@@ -1,6 +1,6 @@
 import {createElement} from '../render';
 
-function createNewTripInfoTemplate() {
+function createTripInfoTemplate() {
   return (
     `<section class="trip-main__trip-info  trip-info">
       <div class="trip-info__main">
@@ -18,7 +18,7 @@ function createNewTripInfoTemplate() {
 
 export default class TripInfoView {
   getTemplate() {
-    return createNewTripInfoTemplate();
+    return createTripInfoTemplate();
   }
 
   getElement() {

@@ -1,9 +1,8 @@
 import {createElement} from '../render';
 
-
 function createEventTemplate() {
   return (
-    `<div class="event">
+    `<div class="event trip-events__item">
       <time class="event__date" datetime="2019-03-18">MAR 18</time>
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/taxi.png" alt="Event type icon">
@@ -41,7 +40,7 @@ function createEventTemplate() {
   );
 }
 
-export default class EventView{
+export default class EventView {
   getTemplate() {
     return createEventTemplate();
   }
