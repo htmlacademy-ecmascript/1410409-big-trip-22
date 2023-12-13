@@ -1,7 +1,7 @@
 import EventsListView from '../view/events-list';
 import {render, RenderPosition} from '../render';
 import EventView from '../view/event-view';
-import {EVENT_COUNT} from '../constants';
+import {EVENT_COUNT} from '../const';
 import TripInfoView from '../view/trip-info-view';
 import FiltersView from '../view/filters-view';
 import SortView from '../view/sort-view';
