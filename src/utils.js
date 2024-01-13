@@ -1,7 +1,6 @@
 import dayjs from 'dayjs';
 import {MIN_IN_DAY, MIN_IN_HOUR, MS_IN_MIN} from './const';
-
-export {getRandomNumber, getRandomArrayElement, shuffle, capitalizeFirstLetter, durationTime, getRandomId};
+import {mockEvents} from './mock/events';
 
 function getRandomNumber(number) {
   return Math.floor(Math.random() * number);
@@ -57,6 +56,26 @@ function addTwoDigitalFormat(number) {
   return `${number}`;
 }
 
-function getRandomId() {
-  return Math.random().toString(16).slice(2);
+function getRandomEvent() {
+  return getRandomArrayElement(mockEvents);
 }
+
+function getItemById(id, array) {
+  return array.find((item) => item.id === id);
+}
+
+function getOffersChecked(eventType, allOffers, checkedOfferIds) {
+  const offersByType = allOffers.find((offer) => offer.type === eventType).offers;
+  return offersByType.filter((offer) => checkedOfferIds.includes(offer.id));
+}
+
+export {
+  getRandomNumber,
+  getRandomArrayElement,
+  shuffle,
+  capitalizeFirstLetter,
+  durationTime,
+  getRandomEvent,
+  getItemById,
+  getOffersChecked
+};

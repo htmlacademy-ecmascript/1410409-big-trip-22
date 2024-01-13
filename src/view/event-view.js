@@ -1,24 +1,35 @@
 import {createElement} from '../render';
-import {capitalizeFirstLetter, durationTime} from '../utils';
+import {capitalizeFirstLetter, durationTime, getItemById, getOffersChecked} from '../utils';
 import dayjs from 'dayjs';
+import {DESTINATIONS} from '../mock/destinations';
+import {OFFERS} from '../mock/offers';
+import {DATE_FORMAT_DATE, DATE_FORMAT_TAG, DATE_FORMAT_TAG_FULL, DATE_FORMAT_TIME} from '../const';
 
-const DATE_FORMAT_DATE = 'MMM D';
-const DATE_FORMAT_TIME = 'HH:MM';
-const DATE_FORMAT_TAG = 'YYYY-MM-DD';
-const DATE_FORMAT_TAG_FULL = 'YYYY-MM-DDTHH:MM';
+function createOfferTemplate({title, price}) {
+  return (`<li class="event__offer">
+            <span class="event__offer-title">${title}</span>
+            &plus;&euro;&nbsp;
+            <span class="event__offer-price">${price}</span>
+          </li>`);
+}
 
 function createEventTemplate(event) {
   const {
     dateFrom,
     dateTo,
     type,
-    city,
+    destination,
     basePrice,
     offers,
     isFavorite,
-    destination,
   } = event;
-  console.log(event);
+
+  const destinationData = getItemById(destination, DESTINATIONS);
+  const {
+    name: nameDest,
+  } = destinationData;
+
+  const offersChecked = getOffersChecked(type, OFFERS, offers);
 
   return (
     `<div class="event trip-events__item">
@@ -26,7 +37,7 @@ function createEventTemplate(event) {
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
       </div>
-      <h3 class="event__title">${capitalizeFirstLetter(type)} ${city}</h3>
+      <h3 class="event__title">${capitalizeFirstLetter(type)} ${nameDest}</h3>
       <div class="event__schedule">
         <p class="event__time">
           <time class="event__start-time" datetime=${dayjs(dateFrom).format(DATE_FORMAT_TAG_FULL)}>${dayjs(dateFrom).format(DATE_FORMAT_TIME)}</time>
@@ -39,15 +50,10 @@ function createEventTemplate(event) {
         &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
       </p>
       <h4 class="visually-hidden">Offers:</h4>
-      ${!!offers.length &&
-        `<ul class="event__selected-offers">
-          ${offers.map((offer) =>
-      `<li class="event__offer">
-            <span class="event__offer-title">${offer.title}</span>
-            &plus;&euro;&nbsp;
-            <span class="event__offer-price">${offer.price}</span>
-          </li>`).join('')}
-        </ul>`
+      ${offersChecked.length ?
+      `<ul class="event__selected-offers">
+          ${offersChecked.map((offer) => createOfferTemplate(offer)).join('')}
+        </ul>` : ''
     }
       <button class="event__favorite-btn ${isFavorite && 'event__favorite-btn--active'}" type="button">
         <span class="visually-hidden">Add to favorite</span>
