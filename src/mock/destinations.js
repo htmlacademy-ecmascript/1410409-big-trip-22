@@ -1,4 +1,4 @@
-export const DESTINATIONS = [
+const DESTINATIONS = [
   {
     'id': 'c98dce07-9fa9-4990-a0f8-c0595ce0ab9d',
     'description': '',
@@ -147,3 +147,9 @@ export const DESTINATIONS = [
     ]
   }
 ];
+
+function getMockDestinations() {
+  return DESTINATIONS;
+}
+
+export {getMockDestinations};

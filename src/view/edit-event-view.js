@@ -1,11 +1,9 @@
 import {createElement} from '../render';
 import {DATE_FORMAT_INPUT_DATE, DATE_FORMAT_INPUT_TIME, EVENT_TYPES} from '../const';
-import {capitalizeFirstLetter, getItemById} from '../utils';
-import {DESTINATIONS} from '../mock/destinations';
+import {capitalizeFirstLetter, getItemById} from '../utils/utils';
 import dayjs from 'dayjs';
-import {OFFERS} from '../mock/offers';
 
-function eventTypeListTemplate(availableTypes) {
+function createEventTypeListTemplate(availableTypes) {
   return `
   <fieldset class="event__type-group">
     <legend class="visually-hidden">Event type</legend>
@@ -18,44 +16,67 @@ function eventTypeListTemplate(availableTypes) {
   </fieldset>`;
 }
 
-function offersTemplate(type, allOffers, checkedOfferIds) {
-  const offersByType = allOffers.find((offer) => offer.type === type).offers;
-
-  return (`
-    <section class="event__section  event__section--offers">
-      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-
-      <div class="event__available-offers">
-        ${offersByType.length > 0 ? offersByType.map((offer) => (
-      `<div class="event__offer-selector">
+function createSelectorOfferTemplate(offersByType, checkedOfferIds) {
+  if (offersByType.length === 0) {
+    return '';
+  }
+  return offersByType.map((offer) => (
+    `<div class="event__offer-selector">
         <input class="event__offer-checkbox  visually-hidden" id=${offer.id} type="checkbox" name="event-offer-luggage" ${checkedOfferIds.includes(offer.id) ? 'checked' : ''}>
           <label class="event__offer-label" for=${offer.id}>
             <span class="event__offer-title">${offer.title}</span>
             &plus;&euro;&nbsp;
             <span class="event__offer-price">${offer.price}</span>
           </label>
-      </div>`)).join('') : ''}
+      </div>`)).join('');
+}
+
+function createOffersTemplate(type, allOffers, checkedOfferIds) {
+  if (checkedOfferIds.length === 0) {
+    return '';
+  }
+  const offersByType = allOffers.find((offer) => offer.type === type).offers;
+  return (`
+    <section class="event__section  event__section--offers">
+      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+
+      <div class="event__available-offers">
+        ${createSelectorOfferTemplate(offersByType, checkedOfferIds)}
       </div>
     </section>
    `);
 }
 
-function destinationTemplate(destinationData) {
+function createPictureTemplate(picture) {
+  return (`<img class = "event__photo" src=${picture.src} alt=${picture.description}>`);
+}
+
+function createGalleryTemplate(pictures) {
+  if (pictures.length === 0) {
+    return '';
+  }
+  return (`<div class="event__photos-container">
+    <div class="event__photos-tape">
+      ${pictures.map((picture) => createPictureTemplate(picture)).join('')}
+    </div>`);
+}
+
+function createDestinationTemplate(destinationData) {
+  if (destinationData.description === '') {
+    return '';
+  }
   return (`
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationData.description}</p>
 
-      ${destinationData.pictures.length > 0 ? (`<div class="event__photos-container">
-                      <div class="event__photos-tape">
-                        ${destinationData.pictures.map((picture) => (`
-                        <img class = "event__photo" src=${picture.src} alt=${picture.description}>`)).join('')}
-                    </div>`) : ''}
+      ${createGalleryTemplate(destinationData.pictures)}
+
     </section>
 `);
 }
 
-function createEditEventTemplate(event) {
+function createEditEventTemplate(event, allOffers, allDestinations) {
   const {
     dateFrom,
     dateTo,
@@ -64,12 +85,7 @@ function createEditEventTemplate(event) {
     basePrice,
     offers,
   } = event;
-
-  const destinationData = getItemById(destination, DESTINATIONS);
-  const {
-    name: nameDest,
-    description,
-  } = destinationData;
+  const destinationData = getItemById(destination, allDestinations);
 
   return (
     `<form class="trip-events__item event event--edit" action="#" method="post">
@@ -82,7 +98,7 @@ function createEditEventTemplate(event) {
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
           <div class="event__type-list">
-            ${eventTypeListTemplate(EVENT_TYPES)}
+            ${createEventTypeListTemplate(EVENT_TYPES)}
           </div>
         </div>
 
@@ -90,7 +106,7 @@ function createEditEventTemplate(event) {
           <label class="event__label  event__type-output" for="event-destination-1">
             ${capitalizeFirstLetter(type)}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value=${nameDest} list="destination-list-1">
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value=${destinationData.name} list="destination-list-1">
           <datalist id="destination-list-1">
             <option value="Amsterdam"></option>
             <option value="Geneva"></option>
@@ -121,20 +137,22 @@ function createEditEventTemplate(event) {
         </button>
       </header>
       <section class="event__details">
-        ${offers.length > 0 ? offersTemplate(type, OFFERS, offers) : ''}
-        ${description !== '' ? destinationTemplate(destinationData) : ''}
+        ${createOffersTemplate(type, allOffers, offers)}
+        ${createDestinationTemplate(destinationData)}
       </section>
     </form>`
   );
 }
 
 export default class EditEventView {
-  constructor(event) {
+  constructor(event, offers, destinations) {
     this.event = event;
+    this.offers = offers;
+    this.destinations = destinations;
   }
 
   getTemplate() {
-    return createEditEventTemplate(this.event);
+    return createEditEventTemplate(this.event, this.offers, this.destinations);
   }
 
   getElement() {

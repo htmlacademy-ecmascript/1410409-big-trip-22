@@ -16,18 +16,21 @@ export default class TripPresenter {
   }
 
   init() {
+    this.events = [...this.eventsModel.getEvents()];
+    this.offers = [...this.eventsModel.getOffers()];
+    this.destinations = [...this.eventsModel.getDestinations()];
+
     const eventsList = new EventsListView();
-    this.tripEvents = [...this.eventsModel.getEvents()];
 
     render(new TripInfoView(), this.tripMainElement, RenderPosition.AFTERBEGIN);
     render(new FiltersView(), this.filtersElement);
     render(new SortView(), this.eventsContainerElement);
     render(eventsList, this.eventsContainerElement);
 
-    render(new EditEventView(this.tripEvents[0]), eventsList.getElement());
+    render(new EditEventView(this.events[0], this.offers, this.destinations), eventsList.getElement());
 
-    for (let i = 1; i < this.tripEvents.length; i++) {
-      render(new EventView({event: this.tripEvents[i]}), eventsList.getElement());
+    for (let i = 1; i < this.events.length; i++) {
+      render(new EventView({events: this.events[i], offers: this.offers, destinations: this.destinations}), eventsList.getElement());
     }
   }
 }

@@ -1,11 +1,11 @@
 import {createElement} from '../render';
-import {capitalizeFirstLetter, durationTime, getItemById, getOffersChecked} from '../utils';
+import {capitalizeFirstLetter, getItemById} from '../utils/utils';
 import dayjs from 'dayjs';
-import {DESTINATIONS} from '../mock/destinations';
-import {OFFERS} from '../mock/offers';
 import {DATE_FORMAT_DATE, DATE_FORMAT_TAG, DATE_FORMAT_TAG_FULL, DATE_FORMAT_TIME} from '../const';
+import {durationTime} from '../utils/time';
+import {getOffersChecked} from '../utils/offers';
 
-function createOfferTemplate({title, price}) {
+function createOffersTemplate({title, price}) {
   return (`<li class="event__offer">
             <span class="event__offer-title">${title}</span>
             &plus;&euro;&nbsp;
@@ -13,7 +13,17 @@ function createOfferTemplate({title, price}) {
           </li>`);
 }
 
-function createEventTemplate(event) {
+function createOffersListTemplate(offersChecked) {
+  if (offersChecked.length === 0) {
+    return '';
+  }
+  return (`<ul class="event__selected-offers">
+          ${offersChecked.map((offer) => createOffersTemplate(offer)).join('')}
+          </ul>`);
+}
+
+
+function createEventTemplate(event, allOffers, allDestinations) {
   const {
     dateFrom,
     dateTo,
@@ -24,12 +34,12 @@ function createEventTemplate(event) {
     isFavorite,
   } = event;
 
-  const destinationData = getItemById(destination, DESTINATIONS);
+  const destinationData = getItemById(destination, allDestinations);
   const {
     name: nameDest,
   } = destinationData;
 
-  const offersChecked = getOffersChecked(type, OFFERS, offers);
+  const offersChecked = getOffersChecked(type, allOffers, offers);
 
   return (
     `<div class="event trip-events__item">
@@ -50,12 +60,8 @@ function createEventTemplate(event) {
         &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
       </p>
       <h4 class="visually-hidden">Offers:</h4>
-      ${offersChecked.length ?
-      `<ul class="event__selected-offers">
-          ${offersChecked.map((offer) => createOfferTemplate(offer)).join('')}
-        </ul>` : ''
-    }
-      <button class="event__favorite-btn ${isFavorite && 'event__favorite-btn--active'}" type="button">
+      ${createOffersListTemplate(offersChecked)}
+      <button class="event__favorite-btn ${isFavorite ? 'event__favorite-btn--active' : ''}" type="button">
         <span class="visually-hidden">Add to favorite</span>
         <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
           <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
@@ -69,12 +75,14 @@ function createEventTemplate(event) {
 }
 
 export default class EventView {
-  constructor({event}) {
-    this.event = event;
+  constructor({events, offers, destinations}) {
+    this.event = events;
+    this.offers = offers;
+    this.destinations = destinations;
   }
 
   getTemplate() {
-    return createEventTemplate(this.event);
+    return createEventTemplate(this.event, this.offers, this.destinations);
   }
 
   getElement() {

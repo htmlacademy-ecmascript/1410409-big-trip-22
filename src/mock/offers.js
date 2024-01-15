@@ -1,4 +1,4 @@
-export const OFFERS = [
+const OFFERS = [
   {
     'type': 'taxi',
     'offers': [
@@ -204,3 +204,9 @@ export const OFFERS = [
     ]
   }
 ];
+
+function getMockOffers() {
+  return OFFERS;
+}
+
+export {getMockOffers};
