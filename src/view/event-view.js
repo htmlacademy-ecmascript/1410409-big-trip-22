@@ -1,9 +1,9 @@
-import {createElement} from '../render';
-import {capitalizeFirstLetter, getItemById} from '../utils/utils';
+import {capitalizeFirstLetter, getItemById} from '../utils/common';
 import dayjs from 'dayjs';
 import {DATE_FORMAT_DATE, DATE_FORMAT_TAG, DATE_FORMAT_TAG_FULL, DATE_FORMAT_TIME} from '../const';
 import {durationTime} from '../utils/time';
 import {getOffersChecked} from '../utils/offers';
+import AbstractView from '../framework/view/abstract-view';
 
 function createOffersTemplate({title, price}) {
   return (`<li class="event__offer">
@@ -74,26 +74,28 @@ function createEventTemplate(event, allOffers, allDestinations) {
   );
 }
 
-export default class EventView {
-  constructor({events, offers, destinations}) {
-    this.event = events;
-    this.offers = offers;
-    this.destinations = destinations;
+export default class EventView extends AbstractView {
+  #event = null;
+  #offers = null;
+  #destinations = null;
+  #handleOnClick = null;
+
+  constructor({event, offers, destinations, onClickEdit}) {
+    super();
+    this.#event = event;
+    this.#offers = offers;
+    this.#destinations = destinations;
+    this.#handleOnClick = onClickEdit;
+
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
   }
 
-  getTemplate() {
-    return createEventTemplate(this.event, this.offers, this.destinations);
+  get template() {
+    return createEventTemplate(this.#event, this.#offers, this.#destinations);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #editClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleOnClick();
+  };
 }

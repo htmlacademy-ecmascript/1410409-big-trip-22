@@ -1,7 +1,7 @@
-import {createElement} from '../render';
 import {DATE_FORMAT_INPUT_DATE, DATE_FORMAT_INPUT_TIME, EVENT_TYPES} from '../const';
-import {capitalizeFirstLetter, getItemById} from '../utils/utils';
+import {capitalizeFirstLetter, getItemById} from '../utils/common';
 import dayjs from 'dayjs';
+import AbstractView from '../framework/view/abstract-view';
 
 function createEventTypeListTemplate(availableTypes) {
   return `
@@ -145,26 +145,29 @@ function createEditEventTemplate(event, allOffers, allDestinations) {
   );
 }
 
-export default class EditEventView {
-  constructor(event, offers, destinations) {
-    this.event = event;
-    this.offers = offers;
-    this.destinations = destinations;
+export default class EditEventView extends AbstractView {
+  #event = null;
+  #offers = null;
+  #destinations = null;
+  #handleFormSubmit = null;
+
+  constructor({event, offers, destinations, onFormSubmit}) {
+    super();
+    this.#event = event;
+    this.#offers = offers;
+    this.#destinations = destinations;
+    this.#handleFormSubmit = onFormSubmit;
+
+    this.element.addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formSubmitHandler);
   }
 
-  getTemplate() {
-    return createEditEventTemplate(this.event, this.offers, this.destinations);
+  get template() {
+    return createEditEventTemplate(this.#event, this.#offers, this.#destinations);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFormSubmit();
+  };
 }
