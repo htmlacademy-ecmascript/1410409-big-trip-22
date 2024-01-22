@@ -147,16 +147,16 @@ function createEditEventTemplate(event, allOffers, allDestinations) {
 
 export default class EditEventView extends AbstractView {
   #event = null;
-  #offers = null;
-  #destinations = null;
-  #handleFormSubmit = null;
+  #offers = [];
+  #destinations = [];
+  #onFormSubmit = () => {};
 
   constructor({event, offers, destinations, onFormSubmit}) {
     super();
     this.#event = event;
     this.#offers = offers;
     this.#destinations = destinations;
-    this.#handleFormSubmit = onFormSubmit;
+    this.#onFormSubmit = onFormSubmit;
 
     this.element.addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formSubmitHandler);
@@ -168,6 +168,6 @@ export default class EditEventView extends AbstractView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit();
+    this.#onFormSubmit();
   };
 }

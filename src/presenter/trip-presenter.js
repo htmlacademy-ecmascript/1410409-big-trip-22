@@ -6,6 +6,7 @@ import FiltersView from '../view/filters-view';
 import SortView from '../view/sort-view';
 import EditEventView from '../view/edit-event-view';
 import {replace} from '../framework/render';
+import NoEventView from '../view/no-event';
 
 export default class TripPresenter {
   #eventsList = null;
@@ -30,16 +31,7 @@ export default class TripPresenter {
     this.#offers = [...this.#eventsModel.offers];
     this.#destinations = [...this.#eventsModel.destinations];
 
-    this.#eventsList = new EventsListView();
-
-    render(new TripInfoView(), this.#tripMainElement, RenderPosition.AFTERBEGIN);
-    render(new FiltersView(), this.#filtersElement);
-    render(new SortView(), this.#eventsContainerElement);
-    render(this.#eventsList, this.#eventsContainerElement);
-
-    for (let i = 0; i < this.#events.length; i++) {
-      this.#renderEvent(this.#events[i], this.#offers, this.#destinations);
-    }
+    this.#renderApp();
   }
 
   #renderEvent(event, offers, destinations) {
@@ -80,5 +72,23 @@ export default class TripPresenter {
     }
 
     render(eventComponent, this.#eventsList.element);
+  }
+
+  #renderApp() {
+    this.#eventsList = new EventsListView();
+
+    render(new TripInfoView(), this.#tripMainElement, RenderPosition.AFTERBEGIN);
+    render(new FiltersView(this.#events), this.#filtersElement);
+    render(new SortView(this.#events), this.#eventsContainerElement);
+    render(this.#eventsList, this.#eventsContainerElement);
+
+    if (this.#events.length === 0) {
+      render(new NoEventView(), this.#eventsList.element);
+      return;
+    }
+
+    for (let i = 0; i < this.#events.length; i++) {
+      this.#renderEvent(this.#events[i], this.#offers, this.#destinations);
+    }
   }
 }

@@ -76,16 +76,16 @@ function createEventTemplate(event, allOffers, allDestinations) {
 
 export default class EventView extends AbstractView {
   #event = null;
-  #offers = null;
-  #destinations = null;
-  #handleOnClick = null;
+  #offers = [];
+  #destinations = [];
+  #onClickEdit = () => {};
 
   constructor({event, offers, destinations, onClickEdit}) {
     super();
     this.#event = event;
     this.#offers = offers;
     this.#destinations = destinations;
-    this.#handleOnClick = onClickEdit;
+    this.#onClickEdit = onClickEdit;
 
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
   }
@@ -96,6 +96,6 @@ export default class EventView extends AbstractView {
 
   #editClickHandler = (evt) => {
     evt.preventDefault();
-    this.#handleOnClick();
+    this.#onClickEdit();
   };
 }

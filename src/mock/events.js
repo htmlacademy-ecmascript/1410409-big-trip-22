@@ -189,8 +189,8 @@ const EVENTS = [
   {
     'id': '0cfdcac0-26f6-4b3a-bdc1-191fd1839eeb',
     'basePrice': 4735,
-    'dateFrom': '2024-03-25T09:45:06.925Z',
-    'dateTo': '2024-03-26T00:34:06.925Z',
+    'dateFrom': '2022-03-25T09:45:06.925Z',
+    'dateTo': '2022-03-26T00:34:06.925Z',
     'destination': '9765b0f9-1eef-4f4d-a590-684f9c613bfd',
     'isFavorite': true,
     offers: getRandomOfferIdsByType(allOffers, 'sightseeing'),
