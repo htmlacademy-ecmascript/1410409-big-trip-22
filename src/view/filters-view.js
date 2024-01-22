@@ -1,6 +1,7 @@
 import AbstractView from '../framework/view/abstract-view';
 import {generateFilter} from '../mock/filter';
 import {capitalizeFirstLetter} from '../utils/common';
+import {FilterTypes} from '../const';
 
 function createFilterTemplate(filter, currentFilter) {
   const {type, count} = filter;
@@ -36,7 +37,7 @@ export default class FiltersView extends AbstractView {
   #events = [];
   #currentFilter = '';
 
-  constructor(events, currentFilter = 'EVERYTHING') {
+  constructor(events, currentFilter = FilterTypes.EVERYTHING) {
     super();
     this.#events = events;
     this.#currentFilter = currentFilter;

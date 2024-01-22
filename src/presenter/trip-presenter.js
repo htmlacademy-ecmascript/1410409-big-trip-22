@@ -87,8 +87,8 @@ export default class TripPresenter {
       return;
     }
 
-    for (let i = 0; i < this.#events.length; i++) {
-      this.#renderEvent(this.#events[i], this.#offers, this.#destinations);
+    for (const event of this.#events) {
+      this.#renderEvent(event, this.#offers, this.#destinations);
     }
   }
 }
