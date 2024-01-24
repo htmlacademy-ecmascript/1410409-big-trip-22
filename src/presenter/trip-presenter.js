@@ -1,11 +1,10 @@
 import EventsListView from '../view/events-list-view';
-import {render, RenderPosition} from '../render';
 import EventView from '../view/event-view';
 import TripInfoView from '../view/trip-info-view';
 import FiltersView from '../view/filters-view';
 import SortView from '../view/sort-view';
 import EditEventView from '../view/edit-event-view';
-import {replace} from '../framework/render';
+import {render, RenderPosition, replace} from '../framework/render';
 import NoEventView from '../view/no-event';
 
 export default class TripPresenter {
