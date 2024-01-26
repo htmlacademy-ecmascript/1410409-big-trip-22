@@ -7,15 +7,18 @@ export default class EventPresenter {
   #event = null;
   #eventComponent = null;
   #editEventComponent = null;
+  #isEditEventOpen = false;
   #offers = [];
   #destinations = [];
   #onClickFavorite = () => {};
+  #onClickEdit = () => {};
 
-  constructor({eventsList, offers, destinations, onClickFavorite}) {
+  constructor({eventsList, offers, destinations, onClickFavorite, onClickEdit}) {
     this.#eventsList = eventsList;
     this.#onClickFavorite = onClickFavorite;
     this.#offers = offers;
     this.#destinations = destinations;
+    this.#onClickEdit = onClickEdit;
   }
 
   init(event) {
@@ -29,7 +32,7 @@ export default class EventPresenter {
       offers: this.#offers,
       destinations: this.#destinations,
       onClickEdit: () => {
-        this.#replaceCardToForm();
+        this.#openEditEventHandler();
       },
       onClickFavorite: () => {
         this.#onClickFavorite({...this.#event, isFavorite: !this.#event.isFavorite});
@@ -41,7 +44,7 @@ export default class EventPresenter {
       offers: this.#offers,
       destinations: this.#destinations,
       onFormSubmit: () => {
-        this.#replaceFormToCard();
+        this.#closeEditEventHandler();
       },
     });
 
@@ -62,6 +65,12 @@ export default class EventPresenter {
     remove(prevEditEventComponent);
   }
 
+  closeEditEvent = () => {
+    if (this.#isEditEventOpen) {
+      this.#closeEditEventHandler();
+    }
+  }
+
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
@@ -77,5 +86,16 @@ export default class EventPresenter {
   #replaceFormToCard() {
     replace(this.#eventComponent, this.#editEventComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
+  }
+
+  #openEditEventHandler() {
+    this.#onClickEdit();
+    this.#replaceCardToForm();
+    this.#isEditEventOpen = true;
+  }
+
+  #closeEditEventHandler() {
+    this.#replaceFormToCard();
+    this.#isEditEventOpen = false;
   }
 }

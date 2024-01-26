@@ -67,7 +67,8 @@ export default class TripPresenter {
         eventsList: this.#eventsList.element,
         offers: this.#offers,
         destinations: this.#destinations,
-        onClickFavorite: this.#changeEventHandler
+        onClickFavorite: this.#changeEventHandler,
+        onClickEdit: this.#openEditEventHandler,
       });
       this.#eventPresenters.set(event.id, eventPresenter);
       eventPresenter.init(event);
@@ -78,4 +79,8 @@ export default class TripPresenter {
     this.#events = updateItems(updatedEvent, this.#events);
     this.#eventPresenters.get(updatedEvent.id).init(updatedEvent);
   };
+
+  #openEditEventHandler = () => {
+    this.#eventPresenters.forEach((eventPresenter) => eventPresenter.closeEditEvent())
+  }
 }
