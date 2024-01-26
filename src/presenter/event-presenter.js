@@ -1,13 +1,14 @@
 import EventView from '../view/event-view';
 import EditEventView from '../view/edit-event-view';
 import {remove, render, replace} from '../framework/render';
+import {Mode} from '../const';
 
 export default class EventPresenter {
   #eventsList = null;
   #event = null;
   #eventComponent = null;
   #editEventComponent = null;
-  #isEditEventOpen = false;
+  #mode = Mode.DEFAULT;
   #offers = [];
   #destinations = [];
   #onClickFavorite = () => {};
@@ -53,11 +54,11 @@ export default class EventPresenter {
       return;
     }
 
-    if (this.#eventsList.contains(prevEventComponent.element)) {
+    if (this.#mode === Mode.DEFAULT) {
       replace(this.#eventComponent, prevEventComponent);
     }
 
-    if (this.#eventsList.contains(prevEditEventComponent.element)) {
+    if (this.#mode === Mode.EDITING) {
       replace(this.#eventsList, prevEditEventComponent);
     }
 
@@ -66,7 +67,7 @@ export default class EventPresenter {
   }
 
   closeEditEvent = () => {
-    if (this.#isEditEventOpen) {
+    if (this.#mode !== Mode.DEFAULT) {
       this.#closeEditEventHandler();
     }
   };
@@ -91,11 +92,11 @@ export default class EventPresenter {
   #openEditEventHandler() {
     this.#onClickEdit();
     this.#replaceCardToForm();
-    this.#isEditEventOpen = true;
+    this.#mode = Mode.EDITING;
   }
 
   #closeEditEventHandler() {
     this.#replaceFormToCard();
-    this.#isEditEventOpen = false;
+    this.#mode = Mode.DEFAULT;
   }
 }

@@ -35,3 +35,8 @@ export const NoEventMessage = {
   [FilterTypes.PRESENT]: 'There are no present events now',
   [FilterTypes.FUTURE]: 'There are no future events now',
 };
+
+export const Mode = {
+  DEFAULT: 'default',
+  EDITING: 'editing'
+};
