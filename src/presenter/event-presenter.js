@@ -1,6 +1,6 @@
 import EventView from '../view/event-view';
 import EditEventView from '../view/edit-event-view';
-import {render, replace} from '../framework/render';
+import {remove, render, replace} from '../framework/render';
 
 export default class EventPresenter {
   #eventsList = null;
@@ -9,15 +9,20 @@ export default class EventPresenter {
   #editEventComponent = null;
   #offers = [];
   #destinations = [];
+  #onClickFavorite = () => {};
 
-  constructor({eventsList}) {
+  constructor({eventsList, offers, destinations, onClickFavorite}) {
     this.#eventsList = eventsList;
-  }
-
-  init(event, offers, destinations) {
-    this.#event = event;
+    this.#onClickFavorite = onClickFavorite;
     this.#offers = offers;
     this.#destinations = destinations;
+  }
+
+  init(event) {
+    this.#event = event;
+
+    const prevEventComponent = this.#eventComponent;
+    const prevEditEventComponent = this.#editEventComponent;
 
     this.#eventComponent = new EventView({
       event: this.#event,
@@ -25,8 +30,10 @@ export default class EventPresenter {
       destinations: this.#destinations,
       onClickEdit: () => {
         this.#replaceCardToForm();
-        document.removeEventListener('keydown', this.#escKeyDownHandler);
-      }
+      },
+      onClickFavorite: () => {
+        this.#onClickFavorite({...this.#event, isFavorite: !this.#event.isFavorite});
+      },
     });
 
     this.#editEventComponent = new EditEventView({
@@ -35,26 +42,40 @@ export default class EventPresenter {
       destinations: this.#destinations,
       onFormSubmit: () => {
         this.#replaceFormToCard();
-        document.removeEventListener('keydown', this.#escKeyDownHandler);
       },
     });
 
-    render(this.#eventComponent, this.#eventsList);
+    if (prevEventComponent === null || prevEditEventComponent === null) {
+      render(this.#eventComponent, this.#eventsList);
+      return;
+    }
+
+    if (this.#eventsList.contains(prevEventComponent.element)) {
+      replace(this.#eventComponent, prevEventComponent);
+    }
+
+    if (this.#eventsList.contains(prevEditEventComponent.element)) {
+      replace(this.#eventsList, prevEditEventComponent);
+    }
+
+    remove(prevEventComponent);
+    remove(prevEditEventComponent);
   }
 
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
       this.#replaceFormToCard();
-      document.removeEventListener('keydown', this.#escKeyDownHandler);
     }
   };
 
   #replaceCardToForm() {
     replace(this.#editEventComponent, this.#eventComponent);
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   #replaceFormToCard() {
     replace(this.#eventComponent, this.#editEventComponent);
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 }

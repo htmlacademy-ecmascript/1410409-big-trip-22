@@ -5,6 +5,7 @@ import SortView from '../view/sort-view';
 import {render, RenderPosition} from '../framework/render';
 import NoEventView from '../view/no-event';
 import EventPresenter from './event-presenter';
+import {updateItems} from '../utils/common';
 
 export default class TripPresenter {
   #eventsList = null;
@@ -16,26 +17,29 @@ export default class TripPresenter {
   #events = [];
   #offers = [];
   #destinations = [];
+  #eventPresenters = new Map();
 
   constructor({headerElement, filtersElement, eventsBoardElement, eventsModel}) {
     this.#headerElement = headerElement;
     this.#filtersElement = filtersElement;
     this.#eventsBoardElement = eventsBoardElement;
     this.#eventsModel = eventsModel;
-  }
-
-  init() {
     this.#events = [...this.#eventsModel.events];
     this.#offers = [...this.#eventsModel.offers];
     this.#destinations = [...this.#eventsModel.destinations];
-
-    this.#renderApp();
   }
 
-  #renderEvent(event, offers, destinations) {
-    const eventPresenter = new EventPresenter({eventsList: this.#eventsList.element});
+  init() {
+    this.#renderTripInfo();
+    this.#renderFilters();
 
-    eventPresenter.init(event, offers, destinations);
+    if (this.#events.length === 0) {
+      this.#renderNoEvent();
+      return;
+    }
+
+    this.#renderSort();
+    this.#renderEvents();
   }
 
   #renderTripInfo() {
@@ -59,20 +63,19 @@ export default class TripPresenter {
     render(this.#eventsList, this.#eventsBoardElement);
 
     for (const event of this.#events) {
-      this.#renderEvent(event, this.#offers, this.#destinations);
+      const eventPresenter = new EventPresenter({
+        eventsList: this.#eventsList.element,
+        offers: this.#offers,
+        destinations: this.#destinations,
+        onClickFavorite: this.#changeEventHandler
+      });
+      this.#eventPresenters.set(event.id, eventPresenter);
+      eventPresenter.init(event);
     }
   }
 
-  #renderApp() {
-    this.#renderTripInfo();
-    this.#renderFilters();
-
-    if (this.#events.length === 0) {
-      this.#renderNoEvent();
-      return;
-    }
-
-    this.#renderSort();
-    this.#renderEvents();
-  }
+  #changeEventHandler = (updatedEvent) => {
+    this.#events = updateItems(updatedEvent, this.#events);
+    this.#eventPresenters.get(updatedEvent.id).init(updatedEvent);
+  };
 }

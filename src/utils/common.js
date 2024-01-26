@@ -7,4 +7,8 @@ function getItemById(id, array) {
   return array.find((item) => item.id === id);
 }
 
-export {capitalizeFirstLetter, getItemById};
+function updateItems(newItem, allItems) {
+  return allItems.map((item) => item.id === newItem.id ? newItem : item);
+}
+
+export {capitalizeFirstLetter, getItemById, updateItems};
