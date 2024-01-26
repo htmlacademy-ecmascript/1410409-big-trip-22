@@ -69,7 +69,7 @@ export default class EventPresenter {
     if (this.#isEditEventOpen) {
       this.#closeEditEventHandler();
     }
-  }
+  };
 
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {

@@ -81,6 +81,6 @@ export default class TripPresenter {
   };
 
   #openEditEventHandler = () => {
-    this.#eventPresenters.forEach((eventPresenter) => eventPresenter.closeEditEvent())
-  }
+    this.#eventPresenters.forEach((eventPresenter) => eventPresenter.closeEditEvent());
+  };
 }
