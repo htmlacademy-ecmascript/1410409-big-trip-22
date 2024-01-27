@@ -72,6 +72,11 @@ export default class EventPresenter {
     }
   };
 
+  destroy() {
+    remove(this.#eventComponent);
+    remove(this.#editEventComponent);
+  }
+
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();

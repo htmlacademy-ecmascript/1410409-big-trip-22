@@ -3,6 +3,7 @@ import {getRandomOfferIdsByType} from '../utils/offers';
 import {getRandomArrayElement} from '../utils/random';
 import {EVENT_COUNT} from '../const';
 import {nanoid} from 'nanoid';
+import {sortByDay} from '../utils/event';
 
 const allOffers = getMockOffers();
 
@@ -208,8 +209,8 @@ const EVENTS = [
 ];
 
 function getMockEvents() {
-  const eventsWithIds = EVENTS.map((item) => ({id: nanoid(), ...item}));
-  return Array.from({length: EVENT_COUNT}, () => getRandomArrayElement(eventsWithIds));
+  const resultEvents = Array.from({length: Math.min(EVENT_COUNT, EVENTS.length)}, () => getRandomArrayElement(EVENTS));
+  return resultEvents.sort(sortByDay).map((item) => ({id: nanoid(), ...item}));
 }
 
 export {getMockEvents};
