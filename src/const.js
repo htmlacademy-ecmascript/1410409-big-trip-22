@@ -5,7 +5,7 @@ export const DATE_FORMAT_TAG_FULL = 'YYYY-MM-DDTHH:MM';
 export const DATE_FORMAT_INPUT_DATE = 'DD/MM/YY';
 export const DATE_FORMAT_INPUT_TIME = 'HH:MM';
 
-export const EVENT_COUNT = 3;
+export const EVENT_COUNT = 10;
 export const MS_IN_MIN = 60000;
 export const MIN_IN_HOUR = 60;
 export const MIN_IN_DAY = 1440;
@@ -40,3 +40,34 @@ export const Mode = {
   DEFAULT: 'default',
   EDITING: 'editing'
 };
+
+export const SortType = {
+  DAY: 'day',
+  EVENT: 'event',
+  TIME: 'time',
+  PRICE: 'price',
+  OFFERS: 'offers',
+};
+
+export const Sorts = [
+  {
+    sortType: SortType.DAY,
+    isDisabled: false,
+  },
+  {
+    sortType: SortType.EVENT,
+    isDisabled: true,
+  },
+  {
+    sortType: SortType.TIME,
+    isDisabled: false,
+  },
+  {
+    sortType: SortType.PRICE,
+    isDisabled: false,
+  },
+  {
+    sortType: SortType.OFFERS,
+    isDisabled: true,
+  },
+];
