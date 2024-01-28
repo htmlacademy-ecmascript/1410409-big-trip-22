@@ -1,94 +1,86 @@
 import EventsListView from '../view/events-list-view';
-import {render, RenderPosition} from '../render';
-import EventView from '../view/event-view';
 import TripInfoView from '../view/trip-info-view';
 import FiltersView from '../view/filters-view';
 import SortView from '../view/sort-view';
-import EditEventView from '../view/edit-event-view';
-import {replace} from '../framework/render';
+import {render, RenderPosition} from '../framework/render';
 import NoEventView from '../view/no-event';
+import EventPresenter from './event-presenter';
+import {updateItems} from '../utils/common';
 
 export default class TripPresenter {
   #eventsList = null;
-  #tripMainElement = null;
+  #headerElement = null;
   #filtersElement = null;
-  #eventsContainerElement = null;
+  #eventsBoardElement = null;
   #eventsModel = null;
 
   #events = [];
   #offers = [];
   #destinations = [];
+  #eventPresenters = new Map();
 
-  constructor({tripMainElement, filtersElement, eventsContainerElement, eventsModel}) {
-    this.#tripMainElement = tripMainElement;
+  constructor({headerElement, filtersElement, eventsBoardElement, eventsModel}) {
+    this.#headerElement = headerElement;
     this.#filtersElement = filtersElement;
-    this.#eventsContainerElement = eventsContainerElement;
+    this.#eventsBoardElement = eventsBoardElement;
     this.#eventsModel = eventsModel;
-  }
-
-  init() {
     this.#events = [...this.#eventsModel.events];
     this.#offers = [...this.#eventsModel.offers];
     this.#destinations = [...this.#eventsModel.destinations];
-
-    this.#renderApp();
   }
 
-  #renderEvent(event, offers, destinations) {
-    const escKeyDownHandler = (evt) => {
-      if (evt.key === 'Escape') {
-        evt.preventDefault();
-        replaceFormToCard();
-        document.removeEventListener('keydown', escKeyDownHandler);
-      }
-    };
-
-    const eventComponent = new EventView({
-      event,
-      offers,
-      destinations,
-      onClickEdit: () => {
-        replaceCardToForm();
-        document.removeEventListener('keydown', escKeyDownHandler);
-      }
-    });
-
-    const editEventComponent = new EditEventView({
-      event,
-      offers,
-      destinations,
-      onFormSubmit: () => {
-        replaceFormToCard();
-        document.removeEventListener('keydown', escKeyDownHandler);
-      },
-    });
-
-    function replaceCardToForm() {
-      replace(editEventComponent, eventComponent);
-    }
-
-    function replaceFormToCard() {
-      replace(eventComponent, editEventComponent);
-    }
-
-    render(eventComponent, this.#eventsList.element);
-  }
-
-  #renderApp() {
-    this.#eventsList = new EventsListView();
-
-    render(new TripInfoView(), this.#tripMainElement, RenderPosition.AFTERBEGIN);
-    render(new FiltersView(this.#events), this.#filtersElement);
-    render(new SortView(this.#events), this.#eventsContainerElement);
-    render(this.#eventsList, this.#eventsContainerElement);
+  init() {
+    this.#renderTripInfo();
+    this.#renderFilters();
 
     if (this.#events.length === 0) {
-      render(new NoEventView(), this.#eventsList.element);
+      this.#renderNoEvent();
       return;
     }
 
+    this.#renderSort();
+    this.#renderEvents();
+  }
+
+  #renderTripInfo() {
+    render(new TripInfoView(), this.#headerElement, RenderPosition.AFTERBEGIN);
+  }
+
+  #renderFilters() {
+    render(new FiltersView(this.#events), this.#filtersElement);
+  }
+
+  #renderSort() {
+    render(new SortView(), this.#eventsBoardElement);
+  }
+
+  #renderNoEvent() {
+    render(new NoEventView(), this.#eventsBoardElement);
+  }
+
+  #renderEvents() {
+    this.#eventsList = new EventsListView();
+    render(this.#eventsList, this.#eventsBoardElement);
+
     for (const event of this.#events) {
-      this.#renderEvent(event, this.#offers, this.#destinations);
+      const eventPresenter = new EventPresenter({
+        eventsList: this.#eventsList.element,
+        offers: this.#offers,
+        destinations: this.#destinations,
+        onClickFavorite: this.#changeEventHandler,
+        onClickEdit: this.#openEditEventHandler,
+      });
+      this.#eventPresenters.set(event.id, eventPresenter);
+      eventPresenter.init(event);
     }
   }
+
+  #changeEventHandler = (updatedEvent) => {
+    this.#events = updateItems(updatedEvent, this.#events);
+    this.#eventPresenters.get(updatedEvent.id).init(updatedEvent);
+  };
+
+  #openEditEventHandler = () => {
+    this.#eventPresenters.forEach((eventPresenter) => eventPresenter.closeEditEvent());
+  };
 }
