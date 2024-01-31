@@ -22,7 +22,7 @@ export default class TripPresenter {
   #events = [];
   #offers = [];
   #destinations = [];
-  #beforeSortEvents = [];
+  #initialEvents = [];
   #eventPresenters = new Map();
 
   constructor({headerElement, filtersElement, eventsBoardElement, eventsModel}) {
@@ -36,7 +36,7 @@ export default class TripPresenter {
 
   init() {
     this.#events = [...this.#eventsModel.events];
-    this.#beforeSortEvents = [...this.#eventsModel.events];
+    this.#initialEvents = [...this.#eventsModel.events];
 
     this.#renderTripInfo();
     this.#renderFilters();
@@ -77,6 +77,7 @@ export default class TripPresenter {
         destinations: this.#destinations,
         onClickFavorite: this.#changeEventHandler,
         onClickEdit: this.#openEditEventHandler,
+        onDataChange: this.#changeEventHandler,
       });
       this.#eventPresenters.set(event.id, eventPresenter);
       eventPresenter.init(event);
@@ -85,7 +86,7 @@ export default class TripPresenter {
 
   #changeEventHandler = (updatedEvent) => {
     this.#events = updateItems(updatedEvent, this.#events);
-    this.#beforeSortEvents = updateItems(updatedEvent, this.#beforeSortEvents);
+    this.#initialEvents = updateItems(updatedEvent, this.#initialEvents);
     this.#eventPresenters.get(updatedEvent.id).init(updatedEvent);
   };
 
@@ -101,7 +102,7 @@ export default class TripPresenter {
   #sortEvents = (sortType) => {
     switch (sortType) {
       case SortType.DAY:
-        this.#events = [...this.#beforeSortEvents];
+        this.#events = [...this.#initialEvents];
         break;
       case SortType.TIME:
         this.#events.sort(sortByTime);

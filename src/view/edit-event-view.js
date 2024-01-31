@@ -1,7 +1,7 @@
 import {DATE_FORMAT_INPUT_DATE, DATE_FORMAT_INPUT_TIME, EVENT_TYPES} from '../const';
 import {capitalizeFirstLetter, getItemById} from '../utils/common';
 import dayjs from 'dayjs';
-import AbstractView from '../framework/view/abstract-view';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 
 function createEventTypeListTemplate(availableTypes) {
   return `
@@ -12,7 +12,6 @@ function createEventTypeListTemplate(availableTypes) {
       <input id="event-type-${type}" class="event__type-input  visually-hidden" type="radio" name="event-type" value=${type}>
       <label class="event__type-label  event__type-label--${type}" for="event-type-${type}">${capitalizeFirstLetter(type)}</label>
     </div>`).join('')}
-
   </fieldset>`;
 }
 
@@ -76,7 +75,7 @@ function createDestinationTemplate(destinationData) {
 `);
 }
 
-function createEditEventTemplate(event, allOffers, allDestinations) {
+function createEditEventTemplate(eventData, allOffers, allDestinations) {
   const {
     id,
     dateFrom,
@@ -85,7 +84,8 @@ function createEditEventTemplate(event, allOffers, allDestinations) {
     destination,
     basePrice,
     offers,
-  } = event;
+    eventTypeInputValue
+  } = eventData;
   const destinationData = getItemById(destination, allDestinations);
 
   return (
@@ -94,12 +94,12 @@ function createEditEventTemplate(event, allOffers, allDestinations) {
         <div class="event__type-wrapper">
           <label class="event__type  event__type-btn" for="event-type-toggle-${id}">
             <span class="visually-hidden">Choose event type</span>
-            <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
+            <img class="event__type-icon" width="17" height="17" src="img/icons/${eventTypeInputValue}.png" alt="Event type icon">
           </label>
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox">
 
           <div class="event__type-list">
-            ${createEventTypeListTemplate(EVENT_TYPES)}
+            ${createEventTypeListTemplate(EVENT_TYPES, eventTypeInputValue)}
           </div>
         </div>
 
@@ -145,29 +145,67 @@ function createEditEventTemplate(event, allOffers, allDestinations) {
   );
 }
 
-export default class EditEventView extends AbstractView {
+export default class EditEventView extends AbstractStatefulView {
   #event = null;
   #offers = [];
   #destinations = [];
-  #onFormSubmit = () => {};
+  #onFormSubmitHandle = () => {};
+  #onFormCloseHandle = () => {};
 
-  constructor({event, offers, destinations, onFormSubmit}) {
+  constructor({event, offers, destinations, onFormSubmit, onFormClose,}) {
     super();
+    this._setState(EditEventView.parseEventToState(event));
     this.#event = event;
     this.#offers = offers;
     this.#destinations = destinations;
-    this.#onFormSubmit = onFormSubmit;
+    this.#onFormSubmitHandle = onFormSubmit;
+    this.#onFormCloseHandle = onFormClose;
 
-    this.element.addEventListener('submit', this.#formSubmitHandler);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formSubmitHandler);
+    this._restoreHandlers();
   }
 
   get template() {
-    return createEditEventTemplate(this.#event, this.#offers, this.#destinations);
+    return createEditEventTemplate(this._state, this.#offers, this.#destinations);
   }
+
+  reset(event) {
+    this.updateElement(EditEventView.parseEventToState(event));
+  }
+
+  _restoreHandlers() {
+    this.element.addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formResetHandler);
+    this.element.querySelector('.event__type-group').addEventListener('click', this.#changeEventTypeHandler);
+  }
+
+  #formResetHandler = () => {
+    this.#onFormCloseHandle();
+  };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#onFormSubmit();
+    this.#onFormSubmitHandle(EditEventView.parseStateToEvent(this._state));
   };
+
+  #changeEventTypeHandler = (evt) => {
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+    this.updateElement({eventTypeInputValue: evt.target.value});
+  };
+
+  static parseEventToState(event) {
+    return {
+      ...event,
+      eventTypeInputValue: event.type,
+    };
+  }
+
+  static parseStateToEvent(state) {
+    const event = {...state};
+    event.type = state.eventTypeInputValue;
+    delete event.eventTypeInputValue;
+
+    return event;
+  }
 }

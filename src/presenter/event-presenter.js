@@ -11,15 +11,23 @@ export default class EventPresenter {
   #mode = Mode.DEFAULT;
   #offers = [];
   #destinations = [];
-  #onClickFavorite = () => {};
-  #onClickEdit = () => {};
 
-  constructor({eventsList, offers, destinations, onClickFavorite, onClickEdit}) {
+  #onClickFavorite = () => {
+  };
+
+  #onClickFormEdit = () => {
+  };
+
+  #onClickSubmit = () => {
+  };
+
+  constructor({eventsList, offers, destinations, onClickFavorite, onClickEdit, onDataChange,}) {
     this.#eventsList = eventsList;
     this.#onClickFavorite = onClickFavorite;
     this.#offers = offers;
     this.#destinations = destinations;
-    this.#onClickEdit = onClickEdit;
+    this.#onClickFormEdit = onClickEdit;
+    this.#onClickSubmit = onDataChange;
   }
 
   init(event) {
@@ -44,9 +52,10 @@ export default class EventPresenter {
       event: this.#event,
       offers: this.#offers,
       destinations: this.#destinations,
-      onFormSubmit: () => {
-        this.#closeEditEventHandler();
-      },
+      onFormSubmit: this.#submitFormHandler,
+      onFormClose: () => {
+        this.closeEditEvent();
+      }
     });
 
     if (prevEventComponent === null || prevEditEventComponent === null) {
@@ -59,7 +68,7 @@ export default class EventPresenter {
     }
 
     if (this.#mode === Mode.EDITING) {
-      replace(this.#eventsList, prevEditEventComponent);
+      replace(this.#editEventComponent, prevEditEventComponent);
     }
 
     remove(prevEventComponent);
@@ -68,6 +77,7 @@ export default class EventPresenter {
 
   closeEditEvent = () => {
     if (this.#mode !== Mode.DEFAULT) {
+      this.#editEventComponent.reset(this.#event);
       this.#closeEditEventHandler();
     }
   };
@@ -80,13 +90,13 @@ export default class EventPresenter {
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
-      this.#replaceFormToCard();
+      this.closeEditEvent();
     }
   };
 
   #replaceCardToForm() {
     replace(this.#editEventComponent, this.#eventComponent);
-    document.removeEventListener('keydown', this.#escKeyDownHandler);
+    document.addEventListener('keydown', this.#escKeyDownHandler);
   }
 
   #replaceFormToCard() {
@@ -95,7 +105,7 @@ export default class EventPresenter {
   }
 
   #openEditEventHandler() {
-    this.#onClickEdit();
+    this.#onClickFormEdit();
     this.#replaceCardToForm();
     this.#mode = Mode.EDITING;
   }
@@ -104,4 +114,10 @@ export default class EventPresenter {
     this.#replaceFormToCard();
     this.#mode = Mode.DEFAULT;
   }
+
+  #submitFormHandler = (event) => {
+    this.#onClickSubmit(event);
+    this.#replaceFormToCard();
+    this.#mode = Mode.DEFAULT;
+  };
 }
