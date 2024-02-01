@@ -15,6 +15,26 @@ function createEventTypeListTemplate(availableTypes) {
   </fieldset>`;
 }
 
+function createTemplateDestinationInput(allDestinations, currentDestination, currentType) {
+  return (`
+    <div class="event__field-group  event__field-group--destination">
+      <label class="event__label  event__type-output" for="event-destination-${currentDestination.id}">
+        ${capitalizeFirstLetter(currentType)}
+      </label>
+      <input
+      class="event__input event__input--destination"
+      id="event-destination-${currentDestination.id}"
+      type="text"
+      name="event-destination"
+      value="${currentDestination.name}" list="destination-list-${currentDestination.id}"
+      >
+      <datalist id="destination-list-${currentDestination.id}">
+      ${allDestinations.map((destination) => (`<option value="${destination.name}"></option>`)).join('')}
+      </datalist>
+    </div>
+  `);
+}
+
 function createSelectorOfferTemplate(offersByType, checkedOfferIds) {
   if (offersByType.length === 0) {
     return '';
@@ -80,12 +100,12 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
     id,
     dateFrom,
     dateTo,
-    destination,
     basePrice,
     offers,
-    eventTypeInputValue
+    currentEventType,
+    currentDestinationId,
   } = eventData;
-  const destinationData = getItemById(destination, allDestinations);
+  const currentDestination = getItemById(currentDestinationId, allDestinations);
 
   return (
     `<form class="trip-events__item event event--edit" action="#" method="post">
@@ -93,7 +113,7 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
         <div class="event__type-wrapper">
           <label class="event__type  event__type-btn" for="event-type-toggle-${id}">
             <span class="visually-hidden">Choose event type</span>
-            <img class="event__type-icon" width="17" height="17" src="img/icons/${eventTypeInputValue}.png" alt="Event type icon">
+            <img class="event__type-icon" width="17" height="17" src="img/icons/${currentEventType}.png" alt="Event type icon">
           </label>
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox">
 
@@ -102,17 +122,7 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
           </div>
         </div>
 
-        <div class="event__field-group  event__field-group--destination">
-          <label class="event__label  event__type-output" for="event-destination-${destinationData.id}">
-            ${capitalizeFirstLetter(eventTypeInputValue)}
-          </label>
-          <input class="event__input  event__input--destination" id="event-destination-${destinationData.id}" type="text" name="event-destination" value=${destinationData.name} list="destination-list-1">
-          <datalist id="destination-list-${destinationData.id}">
-            <option value="Amsterdam"></option>
-            <option value="Geneva"></option>
-            <option value="Chamonix"></option>
-          </datalist>
-        </div>
+        ${createTemplateDestinationInput(allDestinations, currentDestination, currentEventType)}
 
         <div class="event__field-group  event__field-group--time">
           <label class="visually-hidden" for="event-start-time-${id}">From</label>
@@ -137,8 +147,8 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
         </button>
       </header>
       <section class="event__details">
-        ${createOffersTemplate(eventTypeInputValue, allOffers, offers)}
-        ${createDestinationTemplate(destinationData)}
+        ${createOffersTemplate(currentEventType, allOffers, offers)}
+        ${createDestinationTemplate(currentDestination)}
       </section>
     </form>`
   );
@@ -148,8 +158,8 @@ export default class EditEventView extends AbstractStatefulView {
   #event = null;
   #offers = [];
   #destinations = [];
-  #onFormSubmitHandle = () => {};
-  #onFormCloseHandle = () => {};
+  #onFormSubmitHandler = () => {};
+  #onFormCloseHandler = () => {};
 
   constructor({event, offers, destinations, onFormSubmit, onFormClose,}) {
     super();
@@ -157,8 +167,8 @@ export default class EditEventView extends AbstractStatefulView {
     this.#event = event;
     this.#offers = offers;
     this.#destinations = destinations;
-    this.#onFormSubmitHandle = onFormSubmit;
-    this.#onFormCloseHandle = onFormClose;
+    this.#onFormSubmitHandler = onFormSubmit;
+    this.#onFormCloseHandler = onFormClose;
 
     this._restoreHandlers();
   }
@@ -176,22 +186,31 @@ export default class EditEventView extends AbstractStatefulView {
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formResetHandler);
     this.element.querySelector('.event__type-group').addEventListener('click', this.#changeEventTypeHandler);
     this.element.querySelector('.event__available-offers')?.addEventListener('change', this.#changeOffersHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeDestinationHandler);
   }
 
   #formResetHandler = () => {
-    this.#onFormCloseHandle();
+    this.#onFormCloseHandler();
   };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#onFormSubmitHandle(EditEventView.parseStateToEvent(this._state));
+    this.#onFormSubmitHandler(EditEventView.parseStateToEvent(this._state));
   };
 
   #changeEventTypeHandler = (evt) => {
     if (evt.target.tagName !== 'INPUT') {
       return;
     }
-    this.updateElement({eventTypeInputValue: evt.target.value});
+    this.updateElement({currentEventType: evt.target.value});
+  };
+
+  #changeDestinationHandler = (evt) => {
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+    const selectedDestination = this.#destinations.find((destination) => destination.name === evt.target.value);
+    this.updateElement({currentDestinationId: selectedDestination.id});
   };
 
   #changeOffersHandler = (evt) => {
@@ -205,16 +224,17 @@ export default class EditEventView extends AbstractStatefulView {
   static parseEventToState(event) {
     return {
       ...event,
-      eventTypeInputValue: event.type,
+      currentEventType: event.type,
+      currentDestinationId: event.destination,
       eventOffersChecked: event.offers,
     };
   }
 
   static parseStateToEvent(state) {
     const event = {...state};
-    event.type = state.eventTypeInputValue;
+    event.type = state.currentEventType;
     event.offers = state.eventOffersChecked;
-    delete event.eventTypeInputValue;
+    delete event.currentEventType;
     delete event.eventOffersChecked;
 
     return event;
