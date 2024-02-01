@@ -21,7 +21,7 @@ function createSelectorOfferTemplate(offersByType, checkedOfferIds) {
   }
   return offersByType.map((offer) => (
     `<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id=${offer.id} type="checkbox" name="event-offer-luggage" ${checkedOfferIds.includes(offer.id) ? 'checked' : ''}>
+        <input class="event__offer-checkbox  visually-hidden" id=${offer.id} type="checkbox" name="event-offer-${offer.title}" ${checkedOfferIds.includes(offer.id) ? 'checked' : ''}>
           <label class="event__offer-label" for=${offer.id}>
             <span class="event__offer-title">${offer.title}</span>
             &plus;&euro;&nbsp;
@@ -31,10 +31,10 @@ function createSelectorOfferTemplate(offersByType, checkedOfferIds) {
 }
 
 function createOffersTemplate(type, allOffers, checkedOfferIds) {
-  if (checkedOfferIds.length === 0) {
+  const offersByType = allOffers.find((offer) => offer.type === type).offers;
+  if (offersByType.length === 0) {
     return '';
   }
-  const offersByType = allOffers.find((offer) => offer.type === type).offers;
   return (`
     <section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -80,7 +80,6 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
     id,
     dateFrom,
     dateTo,
-    type,
     destination,
     basePrice,
     offers,
@@ -99,13 +98,13 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox">
 
           <div class="event__type-list">
-            ${createEventTypeListTemplate(EVENT_TYPES, eventTypeInputValue)}
+            ${createEventTypeListTemplate(EVENT_TYPES)}
           </div>
         </div>
 
         <div class="event__field-group  event__field-group--destination">
           <label class="event__label  event__type-output" for="event-destination-${destinationData.id}">
-            ${capitalizeFirstLetter(type)}
+            ${capitalizeFirstLetter(eventTypeInputValue)}
           </label>
           <input class="event__input  event__input--destination" id="event-destination-${destinationData.id}" type="text" name="event-destination" value=${destinationData.name} list="destination-list-1">
           <datalist id="destination-list-${destinationData.id}">
@@ -138,7 +137,7 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
         </button>
       </header>
       <section class="event__details">
-        ${createOffersTemplate(type, allOffers, offers)}
+        ${createOffersTemplate(eventTypeInputValue, allOffers, offers)}
         ${createDestinationTemplate(destinationData)}
       </section>
     </form>`
@@ -176,6 +175,7 @@ export default class EditEventView extends AbstractStatefulView {
     this.element.addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formResetHandler);
     this.element.querySelector('.event__type-group').addEventListener('click', this.#changeEventTypeHandler);
+    this.element.querySelector('.event__available-offers')?.addEventListener('change', this.#changeOffersHandler);
   }
 
   #formResetHandler = () => {
@@ -194,17 +194,28 @@ export default class EditEventView extends AbstractStatefulView {
     this.updateElement({eventTypeInputValue: evt.target.value});
   };
 
+  #changeOffersHandler = (evt) => {
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+    const checkedOffers = Array.from(this.element.querySelectorAll('.event__offer-checkbox:checked'));
+    this._setState({eventOffersChecked: checkedOffers.map((offer) => offer.id)});
+  };
+
   static parseEventToState(event) {
     return {
       ...event,
       eventTypeInputValue: event.type,
+      eventOffersChecked: event.offers,
     };
   }
 
   static parseStateToEvent(state) {
     const event = {...state};
     event.type = state.eventTypeInputValue;
+    event.offers = state.eventOffersChecked;
     delete event.eventTypeInputValue;
+    delete event.eventOffersChecked;
 
     return event;
   }
