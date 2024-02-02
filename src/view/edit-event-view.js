@@ -2,17 +2,47 @@ import {DATE_FORMAT_INPUT_DATE, DATE_FORMAT_INPUT_TIME, EVENT_TYPES} from '../co
 import {capitalizeFirstLetter, getItemById} from '../utils/common';
 import dayjs from 'dayjs';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
+import flatpickr from 'flatpickr';
+
+import 'flatpickr/dist/flatpickr.min.css';
+
 
 function createEventTypeListTemplate(availableTypes) {
-  return `
-  <fieldset class="event__type-group">
-    <legend class="visually-hidden">Event type</legend>
+  return (`
+    <fieldset class="event__type-group">
+      <legend class="visually-hidden">Event type</legend>
 
-    ${availableTypes.map((type) => `<div class="event__type-item">
-      <input id="event-type-${type}" class="event__type-input  visually-hidden" type="radio" name="event-type" value=${type}>
-      <label class="event__type-label  event__type-label--${type}" for="event-type-${type}">${capitalizeFirstLetter(type)}</label>
-    </div>`).join('')}
-  </fieldset>`;
+      ${availableTypes.map((type) => `<div class="event__type-item">
+        <input id="event-type-${type}" class="event__type-input  visually-hidden" type="radio" name="event-type" value=${type}>
+        <label class="event__type-label  event__type-label--${type}" for="event-type-${type}">${capitalizeFirstLetter(type)}</label>
+      </div>`).join('')}
+    </fieldset>`);
+}
+
+function createDateInputTemplate(eventId, dateFrom, dateTo) {
+  return (`
+    <div class="event__field-group  event__field-group--time">
+      <label class="visually-hidden" for="event-start-time-${eventId}">From</label>
+
+      <input
+      class="event__input  event__input--time"
+      id="event-start-time-${eventId}"
+      type="text"
+      name="event-start-time"
+      value=${dayjs(dateFrom).format(DATE_FORMAT_INPUT_DATE)}&nbsp;${dayjs(dateFrom).format(DATE_FORMAT_INPUT_TIME)}
+      >
+
+      &mdash;
+      <label class="visually-hidden" for="event-end-time-${eventId}">To</label>
+
+      <input
+      class="event__input  event__input--time"
+      id="event-end-time--${eventId}"
+      type="text"
+      name="event-end-time"
+      value=${dayjs(dateTo).format(DATE_FORMAT_INPUT_DATE)}&nbsp;${dayjs(dateTo).format(DATE_FORMAT_INPUT_TIME)}
+      >
+    </div>`);
 }
 
 function createTemplateDestinationInput(allDestinations, currentDestination, currentType) {
@@ -41,12 +71,18 @@ function createSelectorOfferTemplate(offersByType, checkedOfferIds) {
   }
   return offersByType.map((offer) => (
     `<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id=${offer.id} type="checkbox" name="event-offer-${offer.title}" ${checkedOfferIds.includes(offer.id) ? 'checked' : ''}>
-          <label class="event__offer-label" for=${offer.id}>
-            <span class="event__offer-title">${offer.title}</span>
-            &plus;&euro;&nbsp;
-            <span class="event__offer-price">${offer.price}</span>
-          </label>
+        <input
+        class="event__offer-checkbox  visually-hidden"
+        id=${offer.id}
+        type="checkbox"
+        name="event-offer-${offer.title}"
+        ${checkedOfferIds.includes(offer.id) ? 'checked' : ''}
+        >
+        <label class="event__offer-label" for=${offer.id}>
+          <span class="event__offer-title">${offer.title}</span>
+          &plus;&euro;&nbsp;
+          <span class="event__offer-price">${offer.price}</span>
+        </label>
       </div>`)).join('');
 }
 
@@ -102,10 +138,10 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
     dateTo,
     basePrice,
     offers,
-    currentEventType,
-    currentDestinationId,
+    destination,
+    type,
   } = eventData;
-  const currentDestination = getItemById(currentDestinationId, allDestinations);
+  const destinationData = getItemById(destination, allDestinations);
 
   return (
     `<form class="trip-events__item event event--edit" action="#" method="post">
@@ -113,31 +149,40 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
         <div class="event__type-wrapper">
           <label class="event__type  event__type-btn" for="event-type-toggle-${id}">
             <span class="visually-hidden">Choose event type</span>
-            <img class="event__type-icon" width="17" height="17" src="img/icons/${currentEventType}.png" alt="Event type icon">
+            <img
+              class="event__type-icon"
+              width="17"
+              height="17"
+              src="img/icons/${type}.png"
+              alt="Event type icon"
+            >
           </label>
-          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox">
-
+          <input
+            class="event__type-toggle  visually-hidden"
+            id="event-type-toggle-${id}"
+            type="checkbox"
+          >
           <div class="event__type-list">
             ${createEventTypeListTemplate(EVENT_TYPES)}
           </div>
         </div>
 
-        ${createTemplateDestinationInput(allDestinations, currentDestination, currentEventType)}
+        ${createTemplateDestinationInput(allDestinations, destinationData, type)}
 
-        <div class="event__field-group  event__field-group--time">
-          <label class="visually-hidden" for="event-start-time-${id}">From</label>
-          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value=${dayjs(dateFrom).format(DATE_FORMAT_INPUT_DATE)}&nbsp;${dayjs(dateFrom).format(DATE_FORMAT_INPUT_TIME)}>
-          &mdash;
-          <label class="visually-hidden" for="event-end-time-${id}">To</label>
-          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value=${dayjs(dateTo).format(DATE_FORMAT_INPUT_DATE)}&nbsp;${dayjs(dateTo).format(DATE_FORMAT_INPUT_TIME)}>
-        </div>
+        ${createDateInputTemplate(id, dateFrom, dateTo)}
 
         <div class="event__field-group  event__field-group--price">
           <label class="event__label" for="event-price-1">
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value=${basePrice}>
+          <input
+            class="event__input  event__input--price"
+            id="event-price-1"
+            type="text"
+            name="event-price"
+            value=${basePrice}
+          >
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -147,8 +192,8 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
         </button>
       </header>
       <section class="event__details">
-        ${createOffersTemplate(currentEventType, allOffers, offers)}
-        ${createDestinationTemplate(currentDestination)}
+        ${createOffersTemplate(type, allOffers, offers)}
+        ${createDestinationTemplate(destinationData)}
       </section>
     </form>`
   );
@@ -156,6 +201,8 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
 
 export default class EditEventView extends AbstractStatefulView {
   #event = null;
+  #eventFromTimepicker = null;
+  #eventToTimepicker = null;
   #offers = [];
   #destinations = [];
   #onFormSubmitHandler = () => {};
@@ -177,6 +224,15 @@ export default class EditEventView extends AbstractStatefulView {
     return createEditEventTemplate(this._state, this.#offers, this.#destinations);
   }
 
+  removeElement() {
+    super.removeElement();
+
+    this.#eventFromTimepicker.destroy();
+    this.#eventToTimepicker.destroy();
+    this.#eventFromTimepicker = null;
+    this.#eventToTimepicker = null;
+  }
+
   reset(event) {
     this.updateElement(EditEventView.parseEventToState(event));
   }
@@ -187,6 +243,8 @@ export default class EditEventView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group').addEventListener('click', this.#changeEventTypeHandler);
     this.element.querySelector('.event__available-offers')?.addEventListener('change', this.#changeOffersHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeDestinationHandler);
+
+    this.#setTimepickers();
   }
 
   #formResetHandler = () => {
@@ -202,7 +260,7 @@ export default class EditEventView extends AbstractStatefulView {
     if (evt.target.tagName !== 'INPUT') {
       return;
     }
-    this.updateElement({currentEventType: evt.target.value});
+    this.updateElement({type: evt.target.value});
   };
 
   #changeDestinationHandler = (evt) => {
@@ -210,7 +268,7 @@ export default class EditEventView extends AbstractStatefulView {
       return;
     }
     const selectedDestination = this.#destinations.find((destination) => destination.name === evt.target.value);
-    this.updateElement({currentDestinationId: selectedDestination.id});
+    this.updateElement({destination: selectedDestination.id});
   };
 
   #changeOffersHandler = (evt) => {
@@ -218,25 +276,54 @@ export default class EditEventView extends AbstractStatefulView {
       return;
     }
     const checkedOffers = Array.from(this.element.querySelectorAll('.event__offer-checkbox:checked'));
-    this._setState({eventOffersChecked: checkedOffers.map((offer) => offer.id)});
+    this._setState({offers: checkedOffers.map((offer) => offer.id)});
   };
 
-  static parseEventToState(event) {
-    return {
-      ...event,
-      currentEventType: event.type,
-      currentDestinationId: event.destination,
-      eventOffersChecked: event.offers,
+  #changeDateFromHandler = ([userDate]) => {
+    this._setState({dateFrom: userDate});
+    this.#eventToTimepicker.set({minDate: userDate});
+  };
+
+  #changeDateToHandler = ([userDate]) => {
+    this._setState({dateTo: userDate});
+    this.#eventFromTimepicker.set({maxDate: userDate});
+  };
+
+  #setTimepickers() {
+    const eventStartDateElement = this.element.querySelector('input[name="event-start-time"]');
+    const eventEndDateElement = this.element.querySelector('input[name="event-end-time"]');
+    const commonOptions = {
+      enableTime: true,
+      dateFormat: 'd/m/y H:i',
+      'time_24hr': true,
     };
+
+    this.#eventFromTimepicker = flatpickr(
+      eventStartDateElement,
+      {
+        ...commonOptions,
+        defaultDate: this._state.dateFrom,
+        maxDate: this._state.dateTo,
+        onClose: this.#changeDateFromHandler,
+      }
+    );
+
+    this.#eventToTimepicker = flatpickr(
+      eventEndDateElement,
+      {
+        ...commonOptions,
+        defaultDate: this._state.dateTo,
+        minDate: this._state.dateFrom,
+        onClose: this.#changeDateToHandler,
+      }
+    );
+  }
+
+  static parseEventToState(event) {
+    return {...event};
   }
 
   static parseStateToEvent(state) {
-    const event = {...state};
-    event.type = state.currentEventType;
-    event.offers = state.eventOffersChecked;
-    delete event.currentEventType;
-    delete event.eventOffersChecked;
-
-    return event;
+    return {...state};
   }
 }
