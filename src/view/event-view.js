@@ -1,7 +1,7 @@
 import {capitalizeFirstLetter, getItemById} from '../utils/common';
 import dayjs from 'dayjs';
 import {DATE_FORMAT_DATE, DATE_FORMAT_TAG, DATE_FORMAT_TAG_FULL, DATE_FORMAT_TIME} from '../const';
-import {durationTime} from '../utils/time';
+import {getDurationTime} from '../utils/time';
 import {getOffersChecked} from '../utils/offers';
 import AbstractView from '../framework/view/abstract-view';
 
@@ -54,7 +54,7 @@ function createEventTemplate(event, allOffers, allDestinations) {
           &mdash;
           <time class="event__end-time" datetime=${dayjs(dateTo).format(DATE_FORMAT_TAG_FULL)}>${dayjs(dateTo).format(DATE_FORMAT_TIME)}</time>
         </p>
-        <p class="event__duration">${durationTime(dateFrom, dateTo)}</p>
+        <p class="event__duration">${getDurationTime(dateFrom, dateTo)}</p>
       </div>
       <p class="event__price">
         &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
@@ -78,8 +78,8 @@ export default class EventView extends AbstractView {
   #event = null;
   #offers = [];
   #destinations = [];
-  #onClickEdit = () => {};
-  #onClickFavorite = () => {};
+  #onClickEdit = () => null;
+  #onClickFavorite = () => null;
 
   constructor({event, offers, destinations, onClickEdit, onClickFavorite}) {
     super();

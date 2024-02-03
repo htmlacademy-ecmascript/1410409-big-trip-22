@@ -12,14 +12,9 @@ export default class EventPresenter {
   #offers = [];
   #destinations = [];
 
-  #onClickFavorite = () => {
-  };
-
-  #onClickFormEdit = () => {
-  };
-
-  #onClickSubmit = () => {
-  };
+  #onClickFavorite = () => null;
+  #onClickFormEdit = () => null;
+  #onClickSubmit = () => null;
 
   constructor({eventsList, offers, destinations, onClickFavorite, onClickEdit, onDataChange,}) {
     this.#eventsList = eventsList;

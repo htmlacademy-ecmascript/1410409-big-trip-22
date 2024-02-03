@@ -1,10 +1,11 @@
 import {DATE_FORMAT_INPUT_DATE, DATE_FORMAT_INPUT_TIME, EVENT_TYPES} from '../const';
-import {capitalizeFirstLetter, getItemById} from '../utils/common';
+import {capitalizeFirstLetter, getItemById, isInput} from '../utils/common';
 import dayjs from 'dayjs';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
 
 import 'flatpickr/dist/flatpickr.min.css';
+import {getFormattedDate} from '../utils/time';
 
 
 function createEventTypeListTemplate(availableTypes) {
@@ -29,7 +30,7 @@ function createDateInputTemplate(eventId, dateFrom, dateTo) {
       id="event-start-time-${eventId}"
       type="text"
       name="event-start-time"
-      value=${dayjs(dateFrom).format(DATE_FORMAT_INPUT_DATE)}&nbsp;${dayjs(dateFrom).format(DATE_FORMAT_INPUT_TIME)}
+      value=${getFormattedDate(dateFrom)}
       >
 
       &mdash;
@@ -40,12 +41,12 @@ function createDateInputTemplate(eventId, dateFrom, dateTo) {
       id="event-end-time--${eventId}"
       type="text"
       name="event-end-time"
-      value=${dayjs(dateTo).format(DATE_FORMAT_INPUT_DATE)}&nbsp;${dayjs(dateTo).format(DATE_FORMAT_INPUT_TIME)}
+      value=${getFormattedDate(dateTo)}
       >
     </div>`);
 }
 
-function createTemplateDestinationInput(allDestinations, currentDestination, currentType) {
+function createDestinationInputTemplate(allDestinations, currentDestination, currentType) {
   return (`
     <div class="event__field-group  event__field-group--destination">
       <label class="event__label  event__type-output" for="event-destination-${currentDestination.id}">
@@ -76,7 +77,7 @@ function createSelectorOfferTemplate(offersByType, checkedOfferIds) {
         id=${offer.id}
         type="checkbox"
         name="event-offer-${offer.title}"
-        ${checkedOfferIds.includes(offer.id) ? 'checked' : ''}
+        ${checkedOfferIds.has(offer.id) ? 'checked' : ''}
         >
         <label class="event__offer-label" for=${offer.id}>
           <span class="event__offer-title">${offer.title}</span>
@@ -167,7 +168,7 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
           </div>
         </div>
 
-        ${createTemplateDestinationInput(allDestinations, destinationData, type)}
+        ${createDestinationInputTemplate(allDestinations, destinationData, type)}
 
         ${createDateInputTemplate(id, dateFrom, dateTo)}
 
@@ -205,18 +206,18 @@ export default class EditEventView extends AbstractStatefulView {
   #eventToTimepicker = null;
   #offers = [];
   #destinations = [];
-  #onFormSubmitHandler = () => {};
-  #onFormCloseHandler = () => {};
+  #onFormSubmitHandler = () => null;
+  #onFormCloseHandler = () => null;
 
   constructor({event, offers, destinations, onFormSubmit, onFormClose,}) {
     super();
-    this._setState(EditEventView.parseEventToState(event));
     this.#event = event;
     this.#offers = offers;
     this.#destinations = destinations;
     this.#onFormSubmitHandler = onFormSubmit;
     this.#onFormCloseHandler = onFormClose;
 
+    this._setState(EditEventView.parseEventToState(event));
     this._restoreHandlers();
   }
 
@@ -257,36 +258,45 @@ export default class EditEventView extends AbstractStatefulView {
   };
 
   #changeEventTypeHandler = (evt) => {
-    if (evt.target.tagName !== 'INPUT') {
+    if (isInput(evt)) {
       return;
     }
+
     this.updateElement({type: evt.target.value});
   };
 
   #changeDestinationHandler = (evt) => {
-    if (evt.target.tagName !== 'INPUT') {
+    if (isInput(evt)) {
       return;
     }
+
     const selectedDestination = this.#destinations.find((destination) => destination.name === evt.target.value);
+
     this.updateElement({destination: selectedDestination.id});
   };
 
   #changeOffersHandler = (evt) => {
-    if (evt.target.tagName !== 'INPUT') {
+    if (isInput(evt)) {
       return;
     }
-    const checkedOffers = Array.from(this.element.querySelectorAll('.event__offer-checkbox:checked'));
-    this._setState({offers: checkedOffers.map((offer) => offer.id)});
+
+    const checkedOfferId = evt.target.id;
+
+    if (this._state.offers.has(checkedOfferId)) {
+      this._state.offers.delete(checkedOfferId);
+    } else {
+      this._state.offers.add(checkedOfferId);
+    }
   };
 
-  #changeDateFromHandler = ([userDate]) => {
-    this._setState({dateFrom: userDate});
-    this.#eventToTimepicker.set({minDate: userDate});
+  #changeDateFromHandler = ([dateFrom]) => {
+    this._setState({dateFrom: dateFrom});
+    this.#eventToTimepicker.set({minDate: dateFrom});
   };
 
-  #changeDateToHandler = ([userDate]) => {
-    this._setState({dateTo: userDate});
-    this.#eventFromTimepicker.set({maxDate: userDate});
+  #changeDateToHandler = ([dateTo]) => {
+    this._setState({dateTo: dateTo});
+    this.#eventFromTimepicker.set({maxDate: dateTo});
   };
 
   #setTimepickers() {
@@ -320,10 +330,10 @@ export default class EditEventView extends AbstractStatefulView {
   }
 
   static parseEventToState(event) {
-    return {...event};
+    return {...event, offers: new Set(event.offers)};
   }
 
   static parseStateToEvent(state) {
-    return {...state};
+    return {...state, offers: Array.from(state.offers)};
   }
 }
