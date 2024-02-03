@@ -2,46 +2,62 @@ import EventsListView from '../view/events-list-view';
 import TripInfoView from '../view/trip-info-view';
 import FiltersView from '../view/filters-view';
 import SortView from '../view/sort-view';
-import {render, RenderPosition} from '../framework/render';
+import {remove, render, RenderPosition} from '../framework/render';
 import NoEventView from '../view/no-event';
 import EventPresenter from './event-presenter';
-import {updateItems} from '../utils/common';
-import {SortType} from '../const';
-import {sortByPrice, sortByTime} from '../utils/event';
+import {SortType, UpdateType, UserAction} from '../const';
+import {sortByDay, sortByPrice, sortByTime} from '../utils/event';
 
 export default class TripPresenter {
-  #eventsList = null;
+  #eventsList = new EventsListView();
   #headerElement = null;
   #filtersElement = null;
   #eventsBoardElement = null;
   #eventsModel = null;
+  #offersModel = null;
+  #destinationsModel = null;
   #sortComponent = null;
   #currentSortType = SortType.DAY;
   #noEventComponent = new NoEventView();
-
-  #events = [];
-  #offers = [];
-  #destinations = [];
-  #initialEvents = [];
   #eventPresenters = new Map();
 
-  constructor({headerElement, filtersElement, eventsBoardElement, eventsModel}) {
+  constructor({headerElement, filtersElement, eventsBoardElement, eventsModel, offersModel, destinationsModel}) {
     this.#headerElement = headerElement;
     this.#filtersElement = filtersElement;
     this.#eventsBoardElement = eventsBoardElement;
     this.#eventsModel = eventsModel;
-    this.#offers = [...this.#eventsModel.offers];
-    this.#destinations = [...this.#eventsModel.destinations];
+    this.#offersModel = offersModel;
+    this.#destinationsModel = destinationsModel;
+
+    this.#eventsModel.addObserver(this.#modelEventHandler);
+  }
+
+  get events() {
+    switch (this.#currentSortType) {
+      case SortType.DAY:
+        return [...this.#eventsModel.events].sort(sortByDay);
+      case SortType.TIME:
+        return [...this.#eventsModel.events].sort(sortByTime);
+      case SortType.PRICE:
+        return [...this.#eventsModel.events].sort(sortByPrice);
+    }
+
+    return this.#eventsModel.events;
+  }
+
+  get offers() {
+    return this.#offersModel.offers;
+  }
+
+  get destinations() {
+    return this.#destinationsModel.destinations;
   }
 
   init() {
-    this.#events = [...this.#eventsModel.events];
-    this.#initialEvents = [...this.#eventsModel.events];
-
     this.#renderTripInfo();
     this.#renderFilters();
 
-    if (this.#events.length === 0) {
+    if (this.events.length === 0) {
       render(this.#noEventComponent, this.#eventsBoardElement);
       return;
     }
@@ -50,12 +66,42 @@ export default class TripPresenter {
     this.#renderEvents();
   }
 
+  #viewActionHandler = (actionType, updateType, update) => {
+    switch (actionType) {
+      case UserAction.UPDATE_EVENT:
+        this.#eventsModel.updateEvent(updateType, update);
+        break;
+      case UserAction.ADD_EVENT:
+        this.#eventsModel.addEvent(updateType, update);
+        break;
+      case UserAction.DELETE_EVENT:
+        this.#eventsModel.deleteEvent(updateType, update);
+        break;
+    }
+  };
+
+  #modelEventHandler = (updateType, event) => {
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this.#eventPresenters.get(event.id).init(event);
+        break;
+      case UpdateType.MINOR:
+        this.#clearBoard();
+        this.#renderBoard();
+        break;
+      case UpdateType.MAJOR:
+        this.#clearBoard(true);
+        this.#renderBoard();
+        break;
+    }
+  };
+
   #renderTripInfo() {
     render(new TripInfoView(), this.#headerElement, RenderPosition.AFTERBEGIN);
   }
 
   #renderFilters() {
-    render(new FiltersView(this.#events), this.#filtersElement);
+    render(new FiltersView(this.events), this.#filtersElement);
   }
 
   #renderSort() {
@@ -67,17 +113,15 @@ export default class TripPresenter {
   }
 
   #renderEvents() {
-    this.#eventsList = new EventsListView();
     render(this.#eventsList, this.#eventsBoardElement);
 
-    for (const event of this.#events) {
+    for (const event of this.events) {
       const eventPresenter = new EventPresenter({
         eventsList: this.#eventsList.element,
-        offers: this.#offers,
-        destinations: this.#destinations,
-        onClickFavorite: this.#changeEventHandler,
+        offers: this.offers,
+        destinations: this.destinations,
         onClickEdit: this.#openEditEventHandler,
-        onDataChange: this.#changeEventHandler,
+        onDataChange: this.#viewActionHandler,
       });
 
       this.#eventPresenters.set(event.id, eventPresenter);
@@ -85,44 +129,35 @@ export default class TripPresenter {
     }
   }
 
-  #changeEventHandler = (updatedEvent) => {
-    this.#events = updateItems(updatedEvent, this.#events);
-    this.#initialEvents = updateItems(updatedEvent, this.#initialEvents);
-    this.#eventPresenters.get(updatedEvent.id).init(updatedEvent);
-  };
-
   #openEditEventHandler = () => {
     this.#eventPresenters.forEach((eventPresenter) => eventPresenter.closeEditEvent());
   };
 
-  #clearEventsList() {
-    this.#eventPresenters.forEach((eventPresenter) => eventPresenter.destroy());
-    this.#eventPresenters.clear();
+  #renderBoard() {
+    this.#renderSort();
+    this.#renderEvents();
   }
 
-  #sortEvents = (sortType) => {
-    switch (sortType) {
-      case SortType.DAY:
-        this.#events = [...this.#initialEvents];
-        break;
-      case SortType.TIME:
-        this.#events.sort(sortByTime);
-        break;
-      case SortType.PRICE:
-        this.#events.sort(sortByPrice);
-        break;
-    }
+  #clearBoard(resetSortType = false) {
+    this.#eventPresenters.forEach((eventPresenter) => eventPresenter.destroy());
+    this.#eventPresenters.clear();
+    remove(this.#sortComponent);
+    remove(this.#noEventComponent);
+    remove(this.#eventsList);
 
-    this.#currentSortType = sortType;
-  };
+    if (resetSortType) {
+      this.#currentSortType = SortType.DAY;
+    }
+  }
 
   #changeSortTypeHandler = (sortType) => {
     if (this.#currentSortType === sortType) {
       return;
     }
 
-    this.#sortEvents(sortType);
-    this.#clearEventsList();
+    this.#currentSortType = sortType;
+
+    this.#clearBoard();
     this.#renderEvents();
   };
 }
