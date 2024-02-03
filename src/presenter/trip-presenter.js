@@ -79,6 +79,7 @@ export default class TripPresenter {
         onClickEdit: this.#openEditEventHandler,
         onDataChange: this.#changeEventHandler,
       });
+
       this.#eventPresenters.set(event.id, eventPresenter);
       eventPresenter.init(event);
     }

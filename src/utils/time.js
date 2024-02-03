@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import {MIN_IN_DAY, MIN_IN_HOUR, MS_IN_MIN} from '../const';
+import {DATE_FORMAT_INPUT_DATE, DATE_FORMAT_INPUT_TIME, MIN_IN_DAY, MIN_IN_HOUR, MS_IN_MIN} from '../const';
 
 function addTwoDigitalFormat(number) {
   if (number < 10) {
@@ -8,7 +8,7 @@ function addTwoDigitalFormat(number) {
   return `${number}`;
 }
 
-function durationTime(dateFrom, dateTo) {
+function getDurationTime(dateFrom, dateTo) {
   const date1 = dayjs(dateFrom);
   const date2 = dayjs(dateTo);
   const diff = date2.diff(date1) / MS_IN_MIN;
@@ -33,6 +33,11 @@ function durationTime(dateFrom, dateTo) {
   }
 }
 
+function getFormattedDate(date) {
+  return `${dayjs(date).format(DATE_FORMAT_INPUT_DATE)}&nbsp;${dayjs(date).format(DATE_FORMAT_INPUT_TIME)}`;
+}
+
 export {
-  durationTime
+  getDurationTime,
+  getFormattedDate,
 };

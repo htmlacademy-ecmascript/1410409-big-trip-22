@@ -11,4 +11,8 @@ function updateItems(newItem, allItems) {
   return allItems.map((item) => item.id === newItem.id ? newItem : item);
 }
 
-export {capitalizeFirstLetter, getItemById, updateItems};
+function isInput(evt) {
+  return evt.target.tagName !== 'INPUT';
+}
+
+export {capitalizeFirstLetter, getItemById, updateItems, isInput};
