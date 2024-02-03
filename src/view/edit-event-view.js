@@ -1,6 +1,5 @@
-import {DATE_FORMAT_INPUT_DATE, DATE_FORMAT_INPUT_TIME, EVENT_TYPES} from '../const';
+import {EVENT_TYPES} from '../const';
 import {capitalizeFirstLetter, getItemById, isInput} from '../utils/common';
-import dayjs from 'dayjs';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
 
