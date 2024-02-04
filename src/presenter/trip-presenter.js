@@ -1,48 +1,74 @@
 import EventsListView from '../view/events-list-view';
 import TripInfoView from '../view/trip-info-view';
-import FiltersView from '../view/filters-view';
 import SortView from '../view/sort-view';
 import {remove, render, RenderPosition} from '../framework/render';
 import NoEventView from '../view/no-event';
 import EventPresenter from './event-presenter';
-import {SortType, UpdateType, UserAction} from '../const';
+import {DEFAULT_FILTER_TYPE, DEFAULT_SORT_TYPE, SortType, UpdateType, UserAction} from '../const';
 import {sortByDay, sortByPrice, sortByTime} from '../utils/event';
+import {filter} from '../utils/filter';
+import NewEventPresenter from './new-event-presenter';
 
 export default class TripPresenter {
   #eventsList = new EventsListView();
   #headerElement = null;
-  #filtersElement = null;
+  #filterElement = null;
   #eventsBoardElement = null;
   #eventsModel = null;
   #offersModel = null;
   #destinationsModel = null;
+  #filterModel = null;
   #sortComponent = null;
-  #currentSortType = SortType.DAY;
+  #currentSortType = DEFAULT_SORT_TYPE;
+  #filterType = DEFAULT_FILTER_TYPE;
   #noEventComponent = new NoEventView();
   #eventPresenters = new Map();
+  #newEventPresenter = null;
 
-  constructor({headerElement, filtersElement, eventsBoardElement, eventsModel, offersModel, destinationsModel}) {
+  constructor({
+    headerElement,
+    filtersElement,
+    eventsBoardElement,
+    eventsModel,
+    offersModel,
+    destinationsModel,
+    filterModel,
+    onNewEventDestroy,
+  }) {
     this.#headerElement = headerElement;
-    this.#filtersElement = filtersElement;
+    this.#filterElement = filtersElement;
     this.#eventsBoardElement = eventsBoardElement;
     this.#eventsModel = eventsModel;
     this.#offersModel = offersModel;
     this.#destinationsModel = destinationsModel;
+    this.#filterModel = filterModel;
+
+    this.#newEventPresenter = new NewEventPresenter({
+      eventsList: this.#eventsList.element,
+      offers: this.offers,
+      destinations: this.destinations,
+      onDataChange: this.#viewActionHandler,
+      onDestroy: onNewEventDestroy,
+    });
 
     this.#eventsModel.addObserver(this.#modelEventHandler);
+    this.#filterModel.addObserver(this.#modelEventHandler);
   }
 
   get events() {
+    this.#filterType = this.#filterModel.filter;
+    const filteredEvents = filter[this.#filterType](this.#eventsModel.events);
+
     switch (this.#currentSortType) {
       case SortType.DAY:
-        return [...this.#eventsModel.events].sort(sortByDay);
+        return filteredEvents.sort(sortByDay);
       case SortType.TIME:
-        return [...this.#eventsModel.events].sort(sortByTime);
+        return filteredEvents.sort(sortByTime);
       case SortType.PRICE:
-        return [...this.#eventsModel.events].sort(sortByPrice);
+        return filteredEvents.sort(sortByPrice);
     }
 
-    return this.#eventsModel.events;
+    return filteredEvents;
   }
 
   get offers() {
@@ -55,7 +81,6 @@ export default class TripPresenter {
 
   init() {
     this.#renderTripInfo();
-    this.#renderFilters();
 
     if (this.events.length === 0) {
       render(this.#noEventComponent, this.#eventsBoardElement);
@@ -64,6 +89,11 @@ export default class TripPresenter {
 
     this.#renderSort();
     this.#renderEvents();
+  }
+
+  addNewEvent() {
+    this.#currentSortType = DEFAULT_SORT_TYPE;
+    this.#newEventPresenter.init();
   }
 
   #viewActionHandler = (actionType, updateType, update) => {
@@ -100,10 +130,6 @@ export default class TripPresenter {
     render(new TripInfoView(), this.#headerElement, RenderPosition.AFTERBEGIN);
   }
 
-  #renderFilters() {
-    render(new FiltersView(this.events), this.#filtersElement);
-  }
-
   #renderSort() {
     this.#sortComponent = new SortView({
       currentSortType: this.#currentSortType,
@@ -129,16 +155,26 @@ export default class TripPresenter {
     }
   }
 
+  #renderNoEvents() {
+    this.#noEventComponent = new NoEventView({filterType: this.#filterType});
+  }
+
   #openEditEventHandler = () => {
+    this.#newEventPresenter.destroy();
     this.#eventPresenters.forEach((eventPresenter) => eventPresenter.closeEditEvent());
   };
 
   #renderBoard() {
+    if (this.events.length === 0) {
+      this.#renderNoEvents();
+    }
+
     this.#renderSort();
     this.#renderEvents();
   }
 
   #clearBoard(resetSortType = false) {
+    this.#newEventPresenter.destroy();
     this.#eventPresenters.forEach((eventPresenter) => eventPresenter.destroy());
     this.#eventPresenters.clear();
     remove(this.#sortComponent);
@@ -146,7 +182,7 @@ export default class TripPresenter {
     remove(this.#eventsList);
 
     if (resetSortType) {
-      this.#currentSortType = SortType.DAY;
+      this.#currentSortType = DEFAULT_SORT_TYPE;
     }
   }
 

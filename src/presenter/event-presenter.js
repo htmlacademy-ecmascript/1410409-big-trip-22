@@ -2,6 +2,7 @@ import EventView from '../view/event-view';
 import EditEventView from '../view/edit-event-view';
 import {remove, render, replace} from '../framework/render';
 import {Mode, UpdateType, UserAction} from '../const';
+import {isEscKey} from '../utils/common';
 
 export default class EventPresenter {
   #eventsList = null;
@@ -92,7 +93,7 @@ export default class EventPresenter {
   };
 
   #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape') {
+    if (isEscKey(evt)) {
       evt.preventDefault();
       this.closeEditEvent();
     }

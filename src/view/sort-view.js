@@ -1,6 +1,6 @@
 import AbstractView from '../framework/view/abstract-view';
-import {Sorts} from '../const';
-import {isInput} from '../utils/common';
+import {DEFAULT_SORT_TYPE, Sorts} from '../const';
+import {isNotInput} from '../utils/common';
 
 
 function createSortElement(sortItem, currentSortType) {
@@ -31,7 +31,7 @@ function createSortTemplate(currentSortType) {
 }
 
 export default class SortView extends AbstractView {
-  #currentSortType = null;
+  #currentSortType = DEFAULT_SORT_TYPE;
   #onChangeSortType = () => null;
 
   constructor({onChangeSortType, currentSortType}) {
@@ -47,7 +47,7 @@ export default class SortView extends AbstractView {
   }
 
   #changeSortTypeHandler = (evt) => {
-    if (isInput(evt)) {
+    if (isNotInput(evt)) {
       return;
     }
 

@@ -29,6 +29,8 @@ export const FilterTypes = {
   FUTURE: 'future',
 };
 
+export const DEFAULT_FILTER_TYPE = FilterTypes.EVERYTHING;
+
 export const NoEventMessage = {
   [FilterTypes.EVERYTHING]: 'Click New Event to create your first point',
   [FilterTypes.PAST]: 'There are no past events now',
@@ -48,6 +50,8 @@ export const SortType = {
   PRICE: 'price',
   OFFERS: 'offers',
 };
+
+export const DEFAULT_SORT_TYPE = SortType.DAY;
 
 export const Sorts = [
   {
@@ -82,4 +86,15 @@ export const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+};
+
+export const DEFAULT_EVENT = {
+  id: 'new',
+  basePrice: 0,
+  dateFrom: null,
+  dateTo: null,
+  destination: '',
+  isFavorite: false,
+  offers: [],
+  type: 'flight',
 };

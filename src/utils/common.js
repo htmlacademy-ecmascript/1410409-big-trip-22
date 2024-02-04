@@ -7,8 +7,12 @@ function getItemById(id, array) {
   return array.find((item) => item.id === id);
 }
 
-function isInput(evt) {
+function isNotInput(evt) {
   return evt.target.tagName !== 'INPUT';
 }
 
-export {capitalizeFirstLetter, getItemById, isInput};
+function isEscKey(evt) {
+  return evt.key === 'Escape' || evt.key === 'Esc';
+}
+
+export {capitalizeFirstLetter, getItemById, isNotInput, isEscKey};
