@@ -205,16 +205,19 @@ export default class EditEventView extends AbstractStatefulView {
   #eventToTimepicker = null;
   #offers = [];
   #destinations = [];
-  #onFormSubmitHandler = () => null;
-  #onFormCloseHandler = () => null;
 
-  constructor({event, offers, destinations, onFormSubmit, onFormClose,}) {
+  #onFormSubmit = () => null;
+  #onFormClose = () => null;
+  #onDeleteClick = () => null;
+
+  constructor({event, offers, destinations, onFormSubmit, onFormClose, onDeleteClick,}) {
     super();
     this.#event = event;
     this.#offers = offers;
     this.#destinations = destinations;
-    this.#onFormSubmitHandler = onFormSubmit;
-    this.#onFormCloseHandler = onFormClose;
+    this.#onFormSubmit = onFormSubmit;
+    this.#onFormClose = onFormClose;
+    this.#onDeleteClick = onDeleteClick;
 
     this._setState(EditEventView.parseEventToState(event));
     this._restoreHandlers();
@@ -243,17 +246,23 @@ export default class EditEventView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group').addEventListener('click', this.#changeEventTypeHandler);
     this.element.querySelector('.event__available-offers')?.addEventListener('change', this.#changeOffersHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeDestinationHandler);
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#clickDeleteHandler);
 
     this.#setTimepickers();
   }
 
+  #clickDeleteHandler = (evt) => {
+    evt.preventDefault();
+    this.#onDeleteClick(EditEventView.parseStateToEvent(this._state));
+  };
+
   #formResetHandler = () => {
-    this.#onFormCloseHandler();
+    this.#onFormClose();
   };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#onFormSubmitHandler(EditEventView.parseStateToEvent(this._state));
+    this.#onFormSubmit(EditEventView.parseStateToEvent(this._state));
   };
 
   #changeEventTypeHandler = (evt) => {

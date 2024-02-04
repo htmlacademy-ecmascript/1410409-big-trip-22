@@ -46,7 +46,8 @@ export default class EventPresenter {
       onFormSubmit: this.#submitFormHandler,
       onFormClose: () => {
         this.closeEditEvent();
-      }
+      },
+      onDeleteClick: this.#deleteClickHandler,
     });
 
     if (prevEventComponent === null || prevEditEventComponent === null) {
@@ -77,6 +78,10 @@ export default class EventPresenter {
     remove(this.#eventComponent);
     remove(this.#editEventComponent);
   }
+
+  #deleteClickHandler = (event) => {
+    this.#onDataChange(UserAction.DELETE_EVENT, UpdateType.MINOR, event);
+  };
 
   #clickFavoriteHandler = () => {
     this.#onDataChange(
