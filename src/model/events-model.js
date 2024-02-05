@@ -1,21 +1,44 @@
 import {getMockEvents} from '../mock/events';
-import {getMockOffers} from '../mock/offers';
-import {getMockDestinations} from '../mock/destinations';
+import Observable from '../framework/observable';
 
-export default class EventsModel {
+export default class EventsModel extends Observable {
   #events = getMockEvents();
-  #offers = getMockOffers();
-  #destinations = getMockDestinations();
 
   get events() {
     return this.#events;
   }
 
-  get offers() {
-    return this.#offers;
+  set events(updatedEvents) {
+    this.#events = {...updatedEvents};
   }
 
-  get destinations() {
-    return this.#destinations;
+  updateEvent(updateType, update) {
+    const index = this.#events.findIndex((event) => event.id === update.id);
+
+    if (index === -1) {
+      throw new Error('Can\'t update unexisting event');
+    }
+
+    this.#events = this.#events.map((event) => event.id === update.id ? update : event);
+
+    this._notify(updateType, update);
+  }
+
+  addEvent(updateType, update) {
+    this.#events = [update, ...this.#events];
+
+    this._notify(updateType, update);
+  }
+
+  deleteEvent(updateType, update) {
+    const index = this.#events.findIndex((event) => event.id === update.id);
+
+    if (index === -1) {
+      throw new Error('Can\'t delete unexisting event');
+    }
+
+    this.#events = this.#events.filter((event) => event.id !== update.id);
+
+    this._notify(updateType, update);
   }
 }

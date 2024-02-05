@@ -1,7 +1,8 @@
 import EventView from '../view/event-view';
 import EditEventView from '../view/edit-event-view';
 import {remove, render, replace} from '../framework/render';
-import {Mode} from '../const';
+import {Mode, UpdateType, UserAction} from '../const';
+import {isEscKey} from '../utils/common';
 
 export default class EventPresenter {
   #eventsList = null;
@@ -12,17 +13,15 @@ export default class EventPresenter {
   #offers = [];
   #destinations = [];
 
-  #onClickFavorite = () => null;
   #onClickFormEdit = () => null;
-  #onClickSubmit = () => null;
+  #onDataChange = () => null;
 
-  constructor({eventsList, offers, destinations, onClickFavorite, onClickEdit, onDataChange,}) {
+  constructor({eventsList, offers, destinations, onClickEdit, onDataChange,}) {
     this.#eventsList = eventsList;
-    this.#onClickFavorite = onClickFavorite;
     this.#offers = offers;
     this.#destinations = destinations;
     this.#onClickFormEdit = onClickEdit;
-    this.#onClickSubmit = onDataChange;
+    this.#onDataChange = onDataChange;
   }
 
   init(event) {
@@ -38,9 +37,7 @@ export default class EventPresenter {
       onClickEdit: () => {
         this.#openEditEventHandler();
       },
-      onClickFavorite: () => {
-        this.#onClickFavorite({...this.#event, isFavorite: !this.#event.isFavorite});
-      },
+      onClickFavorite: this.#clickFavoriteHandler,
     });
 
     this.#editEventComponent = new EditEventView({
@@ -50,7 +47,8 @@ export default class EventPresenter {
       onFormSubmit: this.#submitFormHandler,
       onFormClose: () => {
         this.closeEditEvent();
-      }
+      },
+      onDeleteClick: this.#deleteClickHandler,
     });
 
     if (prevEventComponent === null || prevEditEventComponent === null) {
@@ -82,8 +80,20 @@ export default class EventPresenter {
     remove(this.#editEventComponent);
   }
 
+  #deleteClickHandler = (event) => {
+    this.#onDataChange(UserAction.DELETE_EVENT, UpdateType.MINOR, event);
+  };
+
+  #clickFavoriteHandler = () => {
+    this.#onDataChange(
+      UserAction.UPDATE_EVENT,
+      UpdateType.MINOR,
+      {...this.#event, isFavorite: !this.#event.isFavorite}
+    );
+  };
+
   #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape') {
+    if (isEscKey(evt)) {
       evt.preventDefault();
       this.closeEditEvent();
     }
@@ -111,7 +121,7 @@ export default class EventPresenter {
   }
 
   #submitFormHandler = (event) => {
-    this.#onClickSubmit(event);
+    this.#onDataChange(UserAction.UPDATE_EVENT, UpdateType.MINOR, event);
     this.#replaceFormToCard();
     this.#mode = Mode.DEFAULT;
   };

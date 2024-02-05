@@ -1,7 +1,8 @@
-import {EVENT_TYPES} from '../const';
-import {capitalizeFirstLetter, getItemById, isInput} from '../utils/common';
+import {DEFAULT_EVENT, EVENT_TYPES} from '../const';
+import {capitalizeFirstLetter, getItemById, isNotInput} from '../utils/common';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
+import he from 'he';
 
 import 'flatpickr/dist/flatpickr.min.css';
 import {getFormattedDate} from '../utils/time';
@@ -45,20 +46,20 @@ function createDateInputTemplate(eventId, dateFrom, dateTo) {
     </div>`);
 }
 
-function createDestinationInputTemplate(allDestinations, currentDestination, currentType) {
+function createDestinationInputTemplate(eventId, allDestinations, currentDestination, currentType) {
   return (`
     <div class="event__field-group  event__field-group--destination">
-      <label class="event__label  event__type-output" for="event-destination-${currentDestination.id}">
+      <label class="event__label  event__type-output" for="event-destination-${eventId}">
         ${capitalizeFirstLetter(currentType)}
       </label>
       <input
       class="event__input event__input--destination"
-      id="event-destination-${currentDestination.id}"
+      id="event-destination-${eventId}"
       type="text"
       name="event-destination"
-      value="${currentDestination.name}" list="destination-list-${currentDestination.id}"
+      value="${currentDestination?.name.length > 0 ? he.encode(currentDestination.name) : he.encode('')}" list="destination-list-${eventId}"
       >
-      <datalist id="destination-list-${currentDestination.id}">
+      <datalist id="destination-list-${eventId}">
       ${allDestinations.map((destination) => (`<option value="${destination.name}"></option>`)).join('')}
       </datalist>
     </div>
@@ -86,6 +87,14 @@ function createSelectorOfferTemplate(offersByType, checkedOfferIds) {
       </div>`)).join('');
 }
 
+function createRollupButtonTemplate(id) {
+  if (id === '0') {
+    return;
+  }
+
+  return ('<button class="event__rollup-btn" type="button"><span class="visually-hidden">Close edit event</span></button>');
+}
+
 function createOffersTemplate(type, allOffers, checkedOfferIds) {
   const offersByType = allOffers.find((offer) => offer.type === type).offers;
   if (offersByType.length === 0) {
@@ -110,16 +119,18 @@ function createGalleryTemplate(pictures) {
   if (pictures.length === 0) {
     return '';
   }
+
   return (`<div class="event__photos-container">
     <div class="event__photos-tape">
       ${pictures.map((picture) => createPictureTemplate(picture)).join('')}
     </div>`);
 }
 
-function createDestinationTemplate(destinationData) {
-  if (destinationData.description === '') {
+function createDestinationTemplate(id, destinationData) {
+  if (id === 'new' || destinationData.description === '') {
     return '';
   }
+
   return (`
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
@@ -167,7 +178,7 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
           </div>
         </div>
 
-        ${createDestinationInputTemplate(allDestinations, destinationData, type)}
+        ${createDestinationInputTemplate(id, allDestinations, destinationData, type)}
 
         ${createDateInputTemplate(id, dateFrom, dateTo)}
 
@@ -186,14 +197,12 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-        <button class="event__reset-btn" type="reset">Delete</button>
-        <button class="event__rollup-btn" type="button">
-          <span class="visually-hidden">Open event</span>
-        </button>
+        <button class="event__reset-btn" type="reset">${id === '0' ? 'Cancel' : 'Delete'}</button>
+        ${createRollupButtonTemplate(id)}
       </header>
       <section class="event__details">
         ${createOffersTemplate(type, allOffers, offers)}
-        ${createDestinationTemplate(destinationData)}
+        ${createDestinationTemplate(id, destinationData)}
       </section>
     </form>`
   );
@@ -205,16 +214,26 @@ export default class EditEventView extends AbstractStatefulView {
   #eventToTimepicker = null;
   #offers = [];
   #destinations = [];
-  #onFormSubmitHandler = () => null;
-  #onFormCloseHandler = () => null;
 
-  constructor({event, offers, destinations, onFormSubmit, onFormClose,}) {
+  #onFormSubmit = () => null;
+  #onFormClose = () => null;
+  #onDeleteClick = () => null;
+
+  constructor({
+    event = DEFAULT_EVENT,
+    offers,
+    destinations,
+    onFormSubmit,
+    onFormClose,
+    onDeleteClick,
+  }) {
     super();
     this.#event = event;
     this.#offers = offers;
     this.#destinations = destinations;
-    this.#onFormSubmitHandler = onFormSubmit;
-    this.#onFormCloseHandler = onFormClose;
+    this.#onFormSubmit = onFormSubmit;
+    this.#onFormClose = onFormClose;
+    this.#onDeleteClick = onDeleteClick;
 
     this._setState(EditEventView.parseEventToState(event));
     this._restoreHandlers();
@@ -243,21 +262,27 @@ export default class EditEventView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group').addEventListener('click', this.#changeEventTypeHandler);
     this.element.querySelector('.event__available-offers')?.addEventListener('change', this.#changeOffersHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeDestinationHandler);
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#clickDeleteHandler);
 
     this.#setTimepickers();
   }
 
+  #clickDeleteHandler = (evt) => {
+    evt.preventDefault();
+    this.#onDeleteClick(EditEventView.parseStateToEvent(this._state));
+  };
+
   #formResetHandler = () => {
-    this.#onFormCloseHandler();
+    this.#onFormClose();
   };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#onFormSubmitHandler(EditEventView.parseStateToEvent(this._state));
+    this.#onFormSubmit(EditEventView.parseStateToEvent(this._state));
   };
 
   #changeEventTypeHandler = (evt) => {
-    if (isInput(evt)) {
+    if (isNotInput(evt)) {
       return;
     }
 
@@ -265,7 +290,7 @@ export default class EditEventView extends AbstractStatefulView {
   };
 
   #changeDestinationHandler = (evt) => {
-    if (isInput(evt)) {
+    if (isNotInput(evt)) {
       return;
     }
 
@@ -275,7 +300,7 @@ export default class EditEventView extends AbstractStatefulView {
   };
 
   #changeOffersHandler = (evt) => {
-    if (isInput(evt)) {
+    if (isNotInput(evt)) {
       return;
     }
 
@@ -305,6 +330,7 @@ export default class EditEventView extends AbstractStatefulView {
       enableTime: true,
       dateFormat: 'd/m/y H:i',
       'time_24hr': true,
+      locale: {firstDayOfWeek: 1},
     };
 
     this.#eventFromTimepicker = flatpickr(

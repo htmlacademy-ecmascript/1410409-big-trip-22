@@ -1,7 +1,6 @@
 import AbstractView from '../framework/view/abstract-view';
-import {generateFilter} from '../mock/filter';
 import {capitalizeFirstLetter} from '../utils/common';
-import {FilterTypes} from '../const';
+import {DEFAULT_FILTER_TYPE} from '../const';
 
 function createFilterTemplate(filter, currentFilter) {
   const {type, count} = filter;
@@ -22,28 +21,35 @@ function createFilterTemplate(filter, currentFilter) {
   `);
 }
 
-function createFiltersTemplate(events, currentFilter) {
-  const filters = generateFilter(events);
-
+function createFiltersTemplate(filtersList, currentFilter) {
   return (
     `<form class="trip-filters" action="#" method="get">
-        ${filters.map((filter) => createFilterTemplate(filter, currentFilter)).join('')}
+        ${filtersList.map((filter) => createFilterTemplate(filter, currentFilter)).join('')}
       <button class="visually-hidden" type="submit">Accept filter</button>
      </form>`
   );
 }
 
-export default class FiltersView extends AbstractView {
-  #events = [];
+export default class FilterView extends AbstractView {
+  #filtersList = [];
   #currentFilter = '';
+  #onFilterChange = () => null;
 
-  constructor(events, currentFilter = FilterTypes.EVERYTHING) {
+  constructor({filtersList, currentFilter = DEFAULT_FILTER_TYPE, onFilterChange}) {
     super();
-    this.#events = events;
+    this.#filtersList = filtersList;
     this.#currentFilter = currentFilter;
+    this.#onFilterChange = onFilterChange;
+
+    this.element.addEventListener('change', this.#filterChangeHandler);
   }
 
   get template() {
-    return createFiltersTemplate(this.#events, this.#currentFilter);
+    return createFiltersTemplate(this.#filtersList, this.#currentFilter);
   }
+
+  #filterChangeHandler = (evt) => {
+    evt.preventDefault();
+    this.#onFilterChange(evt.target.value);
+  };
 }
