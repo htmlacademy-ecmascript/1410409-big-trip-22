@@ -8,7 +8,7 @@ import {render} from './framework/render';
 import 'flatpickr/dist/flatpickr.min.css';
 import TripApiService from './trip-api-service';
 
-const AUTHORIZATION = 'Basic 111144ddcsdcvsdvscl1sa2j';
+const AUTHORIZATION = 'Basic 111144ddcsd2cvsdvscl1sa2j';
 const END_POINT = 'https://22.objects.htmlacademy.pro/big-trip';
 
 const headerElement = document.querySelector('.trip-main');

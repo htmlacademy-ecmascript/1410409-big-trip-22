@@ -22,10 +22,10 @@ export const EVENT_TYPES = [
 ];
 
 export const FilterTypes = {
-  EVERYTHING: 'everything',
-  PAST: 'past',
-  PRESENT: 'present',
-  FUTURE: 'future',
+  EVERYTHING: 'EVERYTHING',
+  PAST: 'PAST',
+  PRESENT: 'PRESENT',
+  FUTURE: 'FUTURE',
 };
 
 export const DEFAULT_FILTER_TYPE = FilterTypes.EVERYTHING;
@@ -35,19 +35,20 @@ export const NoEventMessage = {
   [FilterTypes.PAST]: 'There are no past events now',
   [FilterTypes.PRESENT]: 'There are no present events now',
   [FilterTypes.FUTURE]: 'There are no future events now',
+  'SERVER_ERROR': 'Failed to load latest route information',
 };
 
 export const Mode = {
-  DEFAULT: 'default',
-  EDITING: 'editing'
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING'
 };
 
 export const SortType = {
-  DAY: 'day',
-  EVENT: 'event',
-  TIME: 'time',
-  PRICE: 'price',
-  OFFERS: 'offers',
+  DAY: 'DAY',
+  EVENT: 'EVENT',
+  TIME: 'TIME',
+  PRICE: 'PRICE',
+  OFFERS: 'OFFERS',
 };
 
 export const DEFAULT_SORT_TYPE = SortType.DAY;
@@ -90,8 +91,8 @@ export const UpdateType = {
 
 export const DEFAULT_EVENT = {
   basePrice: 0,
-  dateFrom: null,
-  dateTo: null,
+  dateFrom: '',
+  dateTo: '',
   destination: '',
   isFavorite: false,
   offers: [],

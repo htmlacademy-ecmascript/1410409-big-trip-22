@@ -6,6 +6,7 @@ export default class TripModel extends Observable {
   #offers = [];
   #destinations = [];
   #TripApiService = null;
+  #isServerError = false;
 
   constructor({TripApiService}) {
     super();
@@ -24,6 +25,10 @@ export default class TripModel extends Observable {
     return this.#destinations;
   }
 
+  get serverError() {
+    return this.#isServerError;
+  }
+
   set events(updatedEvents) {
     this.#events = {...updatedEvents};
   }
@@ -38,6 +43,8 @@ export default class TripModel extends Observable {
       this.#events = [];
       this.#offers = [];
       this.#destinations = [];
+
+      this.#isServerError = true;
     }
 
 
