@@ -5,7 +5,6 @@ export const DATE_FORMAT_TAG_FULL = 'YYYY-MM-DDTHH:MM';
 export const DATE_FORMAT_INPUT_DATE = 'DD/MM/YY';
 export const DATE_FORMAT_INPUT_TIME = 'HH:MM';
 
-export const EVENT_COUNT = 10;
 export const MS_IN_MIN = 60000;
 export const MIN_IN_HOUR = 60;
 export const MIN_IN_DAY = 1440;
@@ -90,7 +89,6 @@ export const UpdateType = {
 };
 
 export const DEFAULT_EVENT = {
-  id: 'new',
   basePrice: 0,
   dateFrom: null,
   dateTo: null,
@@ -99,3 +97,9 @@ export const DEFAULT_EVENT = {
   offers: [],
   type: 'flight',
 };
+
+export const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
+
