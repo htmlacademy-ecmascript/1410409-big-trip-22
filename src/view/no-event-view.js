@@ -1,7 +1,7 @@
 import AbstractView from '../framework/view/abstract-view';
 import {DEFAULT_FILTER_TYPE, NoEventMessage} from '../const';
 
-function createNoEventTemplate(filterType = DEFAULT_FILTER_TYPE) {
+function createNoEventTemplate({filterType = DEFAULT_FILTER_TYPE}) {
   return `<p class="trip-events__msg">${NoEventMessage[filterType]}</p>`;
 }
 

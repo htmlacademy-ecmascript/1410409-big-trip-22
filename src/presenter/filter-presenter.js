@@ -7,15 +7,15 @@ import {filter} from '../utils/filter';
 export default class FilterPresenter {
   #filterContainer = null;
   #filterModel = null;
-  #eventsModel = null;
+  #tripModel = null;
   #filterComponent = null;
 
-  constructor({filterContainer, filterModel, eventsModel}) {
+  constructor({filterContainer, filterModel, tripModel}) {
     this.#filterContainer = filterContainer;
     this.#filterModel = filterModel;
-    this.#eventsModel = eventsModel;
+    this.#tripModel = tripModel;
 
-    this.#eventsModel.addObserver(this.#modelChangeHandler);
+    this.#tripModel.addObserver(this.#modelChangeHandler);
     this.#filterModel.addObserver(this.#modelChangeHandler);
   }
 
@@ -23,7 +23,7 @@ export default class FilterPresenter {
     return Object.entries(filter).map(
       ([filterType, filterEvents]) => ({
         type: filterType,
-        count: filterEvents(this.#eventsModel.events).length,
+        count: filterEvents(this.#tripModel.events).length,
       }),
     );
   }

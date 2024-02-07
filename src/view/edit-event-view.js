@@ -4,7 +4,6 @@ import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
 import he from 'he';
 
-import 'flatpickr/dist/flatpickr.min.css';
 import {getFormattedDate} from '../utils/time';
 
 
