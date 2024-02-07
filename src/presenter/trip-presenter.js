@@ -1,5 +1,4 @@
 import EventsListView from '../view/events-list-view';
-import TripInfoView from '../view/trip-info-view';
 import SortView from '../view/sort-view';
 import {remove, render, RenderPosition} from '../framework/render';
 import NoEventView from '../view/no-event-view';
@@ -76,11 +75,15 @@ export default class TripPresenter {
   }
 
   init() {
-    this.#renderTripInfo();
     this.#renderBoard();
   }
 
   addNewEvent() {
+    if (this.#noEventComponent) {
+      remove(this.#noEventComponent);
+      render(this.#eventsList, this.#eventsBoardElement);
+    }
+
     this.#currentSortType = DEFAULT_SORT_TYPE;
     this.#eventPresenters.forEach((eventPresenter) => eventPresenter.closeEditEvent());
     this.#newEventPresenter.init();
@@ -140,10 +143,6 @@ export default class TripPresenter {
     }
   };
 
-  #renderTripInfo() {
-    render(new TripInfoView(), this.#headerElement, RenderPosition.AFTERBEGIN);
-  }
-
   #renderSort() {
     this.#sortComponent = new SortView({
       currentSortType: this.#currentSortType,
@@ -173,10 +172,10 @@ export default class TripPresenter {
     render(this.#loadingComponent, this.#eventsBoardElement, RenderPosition.AFTERBEGIN);
   }
 
-  #renderNoEvents = () => {
-    this.#noEventComponent = new NoEventView({filterType: this.#filterModel.filter});
+  #renderNoEvents(type) {
+    this.#noEventComponent = new NoEventView({filterType: type});
     render(this.#noEventComponent, this.#eventsBoardElement);
-  };
+  }
 
   #openEditEventHandler = () => {
     this.#newEventPresenter.destroy();
@@ -189,6 +188,11 @@ export default class TripPresenter {
       return;
     }
 
+    if (this.#tripModel.serverError) {
+      this.#renderNoEvents('SERVER_ERROR');
+      return;
+    }
+
     this.#newEventPresenter = new NewEventPresenter({
       eventsList: this.#eventsList.element,
       offers: this.offers,
@@ -198,7 +202,7 @@ export default class TripPresenter {
     });
 
     if (this.events.length === 0) {
-      this.#renderNoEvents();
+      this.#renderNoEvents(this.#filterModel.filter);
       return;
     }
 

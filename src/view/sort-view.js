@@ -7,17 +7,17 @@ function createSortElement(sortItem, currentSortType) {
   const {sortType, isDisabled} = sortItem;
 
   return (
-    `<div class="trip-sort__item  trip-sort__item--${sortType}">
+    `<div class="trip-sort__item  trip-sort__item--${sortType.toLowerCase()}">
         <input
-        id="sort-${sortType}"
+        id="sort-${sortType.toLowerCase()}"
         class="trip-sort__input  visually-hidden"
         type="radio"
         name="trip-sort"
-        value=${sortType}
+        value=${sortType.toLowerCase()}
         ${isDisabled === true ? 'disabled' : ''}
         ${sortType === currentSortType ? 'checked' : ''}
         >
-        <label class="trip-sort__btn" for="sort-${sortType}">${sortType}</label>
+        <label class="trip-sort__btn" for="sort-${sortType.toLowerCase()}">${sortType.toLowerCase()}</label>
       </div>`
   );
 }

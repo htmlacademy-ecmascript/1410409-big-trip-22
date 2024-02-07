@@ -184,29 +184,30 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
   const destinationData = getItemById(destination, allDestinations);
   const buttonDeleteText = isDeleting ? 'Deleting...' : 'Delete';
   return (
-    `<form class="trip-events__item event event--edit" action="#" method="post">
-      <header class="event__header">
-        <div class="event__type-wrapper">
-          <label class="event__type  event__type-btn" for="event-type-toggle-${id}">
-            <span class="visually-hidden">Choose event type</span>
-            <img
-              class="event__type-icon"
-              width="17"
-              height="17"
-              src="img/icons/${type}.png"
-              alt="Event type icon"
+    `<li class="trip-events__item">
+      <form class="trip-events__item event event--edit" action="#" method="post">
+        <header class="event__header">
+          <div class="event__type-wrapper">
+            <label class="event__type  event__type-btn" for="event-type-toggle-${id}">
+              <span class="visually-hidden">Choose event type</span>
+              <img
+                class="event__type-icon"
+                width="17"
+                height="17"
+                src="img/icons/${type}.png"
+                alt="Event type icon"
+              >
+            </label>
+            <input
+              class="event__type-toggle  visually-hidden"
+              id="event-type-toggle-${id}"
+              type="checkbox"
+              ${isDisabled ? 'disabled' : ''}
             >
-          </label>
-          <input
-            class="event__type-toggle  visually-hidden"
-            id="event-type-toggle-${id}"
-            type="checkbox"
-            ${isDisabled ? 'disabled' : ''}
-          >
-          <div class="event__type-list">
-            ${createEventTypeListTemplate(EVENT_TYPES)}
+            <div class="event__type-list">
+              ${createEventTypeListTemplate(EVENT_TYPES)}
+            </div>
           </div>
-        </div>
 
         ${createDestinationInputTemplate(id, allDestinations, destinationData, type, isDisabled)}
 
@@ -233,7 +234,8 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
         ${createOffersTemplate(type, allOffers, offers)}
         ${createDestinationTemplate(id, destinationData)}
       </section>
-    </form>`
+    </form>
+</li>`
   );
 }
 
