@@ -14,7 +14,6 @@ export default class NoEventView extends AbstractView {
   }
 
   get template() {
-    console.log(this.#filterType);
     return createNoEventTemplate(this.#filterType);
   }
 }
