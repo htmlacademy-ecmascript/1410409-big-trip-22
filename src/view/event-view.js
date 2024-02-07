@@ -35,6 +35,7 @@ function createEventTemplate(event, allOffers, allDestinations) {
   } = event;
 
   const destinationData = getItemById(destination, allDestinations);
+
   const {
     name: nameDest,
   } = destinationData;

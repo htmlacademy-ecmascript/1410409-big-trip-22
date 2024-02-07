@@ -2,45 +2,42 @@ import EventsListView from '../view/events-list-view';
 import TripInfoView from '../view/trip-info-view';
 import SortView from '../view/sort-view';
 import {remove, render, RenderPosition} from '../framework/render';
-import NoEventView from '../view/no-event';
+import NoEventView from '../view/no-event-view';
 import EventPresenter from './event-presenter';
 import {DEFAULT_FILTER_TYPE, DEFAULT_SORT_TYPE, SortType, UpdateType, UserAction} from '../const';
 import {sortByDay, sortByPrice, sortByTime} from '../utils/event';
 import {filter} from '../utils/filter';
 import NewEventPresenter from './new-event-presenter';
+import LoadingView from '../view/loading-view';
 
 export default class TripPresenter {
-  #eventsList = new EventsListView();
   #headerElement = null;
   #filterElement = null;
   #eventsBoardElement = null;
-  #eventsModel = null;
-  #offersModel = null;
-  #destinationsModel = null;
+  #tripModel = null;
   #filterModel = null;
   #sortComponent = null;
+  #newEventPresenter = null;
   #currentSortType = DEFAULT_SORT_TYPE;
   #filterType = DEFAULT_FILTER_TYPE;
-  #noEventComponent = new NoEventView();
+  #isLoading = true;
   #eventPresenters = new Map();
-  #newEventPresenter = null;
+  #eventsList = new EventsListView();
+  #noEventComponent = new NoEventView();
+  #loadingComponent = new LoadingView();
 
   constructor({
     headerElement,
     filtersElement,
     eventsBoardElement,
-    eventsModel,
-    offersModel,
-    destinationsModel,
+    tripModel,
     filterModel,
     onNewEventDestroy,
   }) {
     this.#headerElement = headerElement;
     this.#filterElement = filtersElement;
     this.#eventsBoardElement = eventsBoardElement;
-    this.#eventsModel = eventsModel;
-    this.#offersModel = offersModel;
-    this.#destinationsModel = destinationsModel;
+    this.#tripModel = tripModel;
     this.#filterModel = filterModel;
 
     this.#newEventPresenter = new NewEventPresenter({
@@ -51,13 +48,13 @@ export default class TripPresenter {
       onDestroy: onNewEventDestroy,
     });
 
-    this.#eventsModel.addObserver(this.#modelEventHandler);
+    this.#tripModel.addObserver(this.#modelEventHandler);
     this.#filterModel.addObserver(this.#modelEventHandler);
   }
 
   get events() {
     this.#filterType = this.#filterModel.filter;
-    const filteredEvents = filter[this.#filterType](this.#eventsModel.events);
+    const filteredEvents = filter[this.#filterType](this.#tripModel.events);
 
     switch (this.#currentSortType) {
       case SortType.DAY:
@@ -72,23 +69,16 @@ export default class TripPresenter {
   }
 
   get offers() {
-    return this.#offersModel.offers;
+    return this.#tripModel.offers;
   }
 
   get destinations() {
-    return this.#destinationsModel.destinations;
+    return this.#tripModel.destinations;
   }
 
   init() {
     this.#renderTripInfo();
-
-    if (this.events.length === 0) {
-      render(this.#noEventComponent, this.#eventsBoardElement);
-      return;
-    }
-
-    this.#renderSort();
-    this.#renderEvents();
+    this.#renderBoard();
   }
 
   addNewEvent() {
@@ -99,13 +89,13 @@ export default class TripPresenter {
   #viewActionHandler = (actionType, updateType, update) => {
     switch (actionType) {
       case UserAction.UPDATE_EVENT:
-        this.#eventsModel.updateEvent(updateType, update);
+        this.#tripModel.updateEvent(updateType, update);
         break;
       case UserAction.ADD_EVENT:
-        this.#eventsModel.addEvent(updateType, update);
+        this.#tripModel.addEvent(updateType, update);
         break;
       case UserAction.DELETE_EVENT:
-        this.#eventsModel.deleteEvent(updateType, update);
+        this.#tripModel.deleteEvent(updateType, update);
         break;
     }
   };
@@ -121,6 +111,11 @@ export default class TripPresenter {
         break;
       case UpdateType.MAJOR:
         this.#clearBoard(true);
+        this.#renderBoard();
+        break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
         this.#renderBoard();
         break;
     }
@@ -155,9 +150,14 @@ export default class TripPresenter {
     }
   }
 
-  #renderNoEvents() {
-    this.#noEventComponent = new NoEventView({filterType: this.#filterType});
+  #renderLoading() {
+    render(this.#loadingComponent, this.#eventsBoardElement, RenderPosition.AFTERBEGIN);
   }
+
+  #renderNoEvents = () => {
+    this.#noEventComponent = new NoEventView({filterType: this.#filterModel.filter});
+    render(this.#noEventComponent, this.#eventsBoardElement);
+  };
 
   #openEditEventHandler = () => {
     this.#newEventPresenter.destroy();
@@ -165,8 +165,14 @@ export default class TripPresenter {
   };
 
   #renderBoard() {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
     if (this.events.length === 0) {
       this.#renderNoEvents();
+      return;
     }
 
     this.#renderSort();
@@ -194,6 +200,7 @@ export default class TripPresenter {
     this.#currentSortType = sortType;
 
     this.#clearBoard();
+    this.#renderSort();
     this.#renderEvents();
   };
 }

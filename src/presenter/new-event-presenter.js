@@ -1,7 +1,6 @@
 import EditEventView from '../view/edit-event-view';
 import {remove, render, RenderPosition} from '../framework/render';
 import {UpdateType, UserAction} from '../const';
-import {nanoid} from 'nanoid';
 import {isEscKey} from '../utils/common';
 
 
@@ -40,6 +39,7 @@ export default class NewEventPresenter {
       onDeleteClick: this.#formDeleteHandler,
     });
 
+
     render(this.#eventEditComponent, this.#eventsList, RenderPosition.AFTERBEGIN);
     document.addEventListener('keydown', this.#escKeyDownHandler);
   }
@@ -61,7 +61,7 @@ export default class NewEventPresenter {
     this.#onDataChange(
       UserAction.ADD_EVENT,
       UpdateType.MINOR,
-      {id: nanoid(), ...event},
+      event,
     );
     this.destroy();
   };
