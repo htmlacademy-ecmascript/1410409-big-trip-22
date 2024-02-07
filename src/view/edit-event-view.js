@@ -31,6 +31,7 @@ function createDateInputTemplate(eventId, dateFrom, dateTo, isDisabled) {
       name="event-start-time"
       value=${getFormattedDate(dateFrom)}
       ${isDisabled ? 'disabled' : ''}
+      required
       >
 
       &mdash;
@@ -43,6 +44,28 @@ function createDateInputTemplate(eventId, dateFrom, dateTo, isDisabled) {
       name="event-end-time"
       value=${getFormattedDate(dateTo)}
       ${isDisabled ? 'disabled' : ''}
+      required
+      >
+    </div>`);
+}
+
+function createPriceInputTemplate(eventId, basePrice, isDisabled) {
+  return (`
+    <div class="event__field-group  event__field-group--price">
+      <label class="event__label" for="event-price-${eventId}">
+        <span class="visually-hidden">Price</span>
+        &euro;
+      </label>
+      <input
+        class="event__input  event__input--price"
+        id="event-price-${eventId}"
+        type="number"
+        min="1"
+        max="100000"
+        name="event-price"
+        value=${basePrice}
+        ${isDisabled ? 'disabled' : ''}
+        required
       >
     </div>`);
 }
@@ -60,6 +83,7 @@ function createDestinationInputTemplate(eventId, allDestinations, currentDestina
       name="event-destination"
       value="${currentDestination?.name.length > 0 ? he.encode(currentDestination.name) : he.encode('')}" list="destination-list-${eventId}"
       ${isDisabled ? 'disabled' : ''}
+      required
       >
       <datalist id="destination-list-${eventId}">
       ${allDestinations.map((destination) => (`<option value="${destination.name}"></option>`)).join('')}
@@ -188,20 +212,7 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
 
         ${createDateInputTemplate(id, dateFrom, dateTo, isDisabled)}
 
-        <div class="event__field-group  event__field-group--price">
-          <label class="event__label" for="event-price-1">
-            <span class="visually-hidden">Price</span>
-            &euro;
-          </label>
-          <input
-            class="event__input  event__input--price"
-            id="event-price-1"
-            type="text"
-            name="event-price"
-            value=${basePrice}
-            ${isDisabled ? 'disabled' : ''}
-          >
-        </div>
+        ${createPriceInputTemplate(id, basePrice, isDisabled)}
 
         <button
           class="event__save-btn  btn  btn--blue"
@@ -281,6 +292,7 @@ export default class EditEventView extends AbstractStatefulView {
     this.element.querySelector('.event__available-offers')?.addEventListener('change', this.#changeOffersHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeDestinationHandler);
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#clickDeleteHandler);
+    this.element.querySelector('.event__input--price').addEventListener('change', this.#changePriceHandler);
 
     this.#setTimepickers();
   }
@@ -315,6 +327,14 @@ export default class EditEventView extends AbstractStatefulView {
     const selectedDestination = this.#destinations.find((destination) => destination.name === evt.target.value);
 
     this.updateElement({destination: selectedDestination.id});
+  };
+
+  #changePriceHandler = (evt) => {
+    if (isNotInput(evt)) {
+      return;
+    }
+
+    this._setState({basePrice: evt.target.value});
   };
 
   #changeOffersHandler = (evt) => {
@@ -383,7 +403,7 @@ export default class EditEventView extends AbstractStatefulView {
   }
 
   static parseStateToEvent(state) {
-    const event = {...state, offers: Array.from(state.offers)};
+    const event = {...state, offers: Array.from(state.offers), basePrice: Number(state.basePrice)};
 
     delete event.isSaving;
     delete event.isDeleting;

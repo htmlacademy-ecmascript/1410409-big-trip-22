@@ -90,8 +90,8 @@ export const UpdateType = {
 
 export const DEFAULT_EVENT = {
   basePrice: 0,
-  dateFrom: null,
-  dateTo: null,
+  dateFrom: '',
+  dateTo: '',
   destination: '',
   isFavorite: false,
   offers: [],

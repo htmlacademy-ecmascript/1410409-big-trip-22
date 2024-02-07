@@ -82,6 +82,7 @@ export default class TripPresenter {
 
   addNewEvent() {
     this.#currentSortType = DEFAULT_SORT_TYPE;
+    this.#eventPresenters.forEach((eventPresenter) => eventPresenter.closeEditEvent());
     this.#newEventPresenter.init();
   }
 
