@@ -21,9 +21,10 @@ export default class TripPresenter {
   #currentSortType = DEFAULT_SORT_TYPE;
   #filterType = DEFAULT_FILTER_TYPE;
   #isLoading = true;
+  #onNewEventDestroy = () => null;
   #eventPresenters = new Map();
   #eventsList = new EventsListView();
-  #noEventComponent = new NoEventView();
+  #noEventComponent = null;
   #loadingComponent = new LoadingView();
 
   constructor({
@@ -39,14 +40,7 @@ export default class TripPresenter {
     this.#eventsBoardElement = eventsBoardElement;
     this.#tripModel = tripModel;
     this.#filterModel = filterModel;
-
-    this.#newEventPresenter = new NewEventPresenter({
-      eventsList: this.#eventsList.element,
-      offers: this.offers,
-      destinations: this.destinations,
-      onDataChange: this.#viewActionHandler,
-      onDestroy: onNewEventDestroy,
-    });
+    this.#onNewEventDestroy = onNewEventDestroy;
 
     this.#tripModel.addObserver(this.#modelEventHandler);
     this.#filterModel.addObserver(this.#modelEventHandler);
@@ -86,7 +80,7 @@ export default class TripPresenter {
     this.#newEventPresenter.init();
   }
 
-  #viewActionHandler = (actionType, updateType, update) => {
+  #dataChangeHandler = (actionType, updateType, update) => {
     switch (actionType) {
       case UserAction.UPDATE_EVENT:
         this.#tripModel.updateEvent(updateType, update);
@@ -142,7 +136,7 @@ export default class TripPresenter {
         offers: this.offers,
         destinations: this.destinations,
         onClickEdit: this.#openEditEventHandler,
-        onDataChange: this.#viewActionHandler,
+        onDataChange: this.#dataChangeHandler,
       });
 
       this.#eventPresenters.set(event.id, eventPresenter);
@@ -169,6 +163,14 @@ export default class TripPresenter {
       this.#renderLoading();
       return;
     }
+
+    this.#newEventPresenter = new NewEventPresenter({
+      eventsList: this.#eventsList.element,
+      offers: this.offers,
+      destinations: this.destinations,
+      onDataChange: this.#dataChangeHandler,
+      onDestroy:  this.#onNewEventDestroy,
+    });
 
     if (this.events.length === 0) {
       this.#renderNoEvents();
