@@ -30,7 +30,6 @@ export default class TripModel extends Observable {
 
   async init() {
     try {
-
       const events = await this.#TripApiService.events;
       this.#events = events.map(this.#adaptToClient);
       this.#offers = await this.#TripApiService.offers;
@@ -47,8 +46,8 @@ export default class TripModel extends Observable {
 
   async updateEvent(updateType, update) {
     const index = this.#events.findIndex((event) => event.id === update.id);
-
     if (index === -1) {
+
       throw new Error('Can\'t update unexisting event');
     }
 

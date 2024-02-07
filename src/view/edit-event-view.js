@@ -19,7 +19,7 @@ function createEventTypeListTemplate(availableTypes) {
     </fieldset>`);
 }
 
-function createDateInputTemplate(eventId, dateFrom, dateTo) {
+function createDateInputTemplate(eventId, dateFrom, dateTo, isDisabled) {
   return (`
     <div class="event__field-group  event__field-group--time">
       <label class="visually-hidden" for="event-start-time-${eventId}">From</label>
@@ -30,6 +30,7 @@ function createDateInputTemplate(eventId, dateFrom, dateTo) {
       type="text"
       name="event-start-time"
       value=${getFormattedDate(dateFrom)}
+      ${isDisabled ? 'disabled' : ''}
       >
 
       &mdash;
@@ -41,11 +42,12 @@ function createDateInputTemplate(eventId, dateFrom, dateTo) {
       type="text"
       name="event-end-time"
       value=${getFormattedDate(dateTo)}
+      ${isDisabled ? 'disabled' : ''}
       >
     </div>`);
 }
 
-function createDestinationInputTemplate(eventId, allDestinations, currentDestination, currentType) {
+function createDestinationInputTemplate(eventId, allDestinations, currentDestination, currentType, isDisabled) {
   return (`
     <div class="event__field-group  event__field-group--destination">
       <label class="event__label  event__type-output" for="event-destination-${eventId}">
@@ -57,6 +59,7 @@ function createDestinationInputTemplate(eventId, allDestinations, currentDestina
       type="text"
       name="event-destination"
       value="${currentDestination?.name.length > 0 ? he.encode(currentDestination.name) : he.encode('')}" list="destination-list-${eventId}"
+      ${isDisabled ? 'disabled' : ''}
       >
       <datalist id="destination-list-${eventId}">
       ${allDestinations.map((destination) => (`<option value="${destination.name}"></option>`)).join('')}
@@ -126,7 +129,7 @@ function createGalleryTemplate(pictures) {
 }
 
 function createDestinationTemplate(id, destinationData) {
-  if (id === 'new' || destinationData.description === '') {
+  if (typeof id === 'undefined' || destinationData.description === '') {
     return '';
   }
 
@@ -150,9 +153,12 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
     offers,
     destination,
     type,
+    isSaving,
+    isDeleting,
+    isDisabled,
   } = eventData;
   const destinationData = getItemById(destination, allDestinations);
-
+  const buttonDeleteText = isDeleting ? 'Deleting...' : 'Delete';
   return (
     `<form class="trip-events__item event event--edit" action="#" method="post">
       <header class="event__header">
@@ -171,15 +177,16 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
             class="event__type-toggle  visually-hidden"
             id="event-type-toggle-${id}"
             type="checkbox"
+            ${isDisabled ? 'disabled' : ''}
           >
           <div class="event__type-list">
             ${createEventTypeListTemplate(EVENT_TYPES)}
           </div>
         </div>
 
-        ${createDestinationInputTemplate(id, allDestinations, destinationData, type)}
+        ${createDestinationInputTemplate(id, allDestinations, destinationData, type, isDisabled)}
 
-        ${createDateInputTemplate(id, dateFrom, dateTo)}
+        ${createDateInputTemplate(id, dateFrom, dateTo, isDisabled)}
 
         <div class="event__field-group  event__field-group--price">
           <label class="event__label" for="event-price-1">
@@ -192,11 +199,23 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
             type="text"
             name="event-price"
             value=${basePrice}
+            ${isDisabled ? 'disabled' : ''}
           >
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-        <button class="event__reset-btn" type="reset">${id === '0' ? 'Cancel' : 'Delete'}</button>
+        <button
+          class="event__save-btn  btn  btn--blue"
+          type="submit"
+          ${isDisabled ? 'disabled' : ''}
+        >
+          ${isSaving ? 'Saving...' : 'Save'}
+        </button>
+        <button
+          class="event__reset-btn"
+          type="reset" ${isDisabled ? 'disabled' : ''}
+        >
+          ${typeof id === 'undefined' ? 'Cancel' : buttonDeleteText}
+        </button>
         ${createRollupButtonTemplate(id)}
       </header>
       <section class="event__details">
@@ -354,10 +373,22 @@ export default class EditEventView extends AbstractStatefulView {
   }
 
   static parseEventToState(event) {
-    return {...event, offers: new Set(event.offers)};
+    return {
+      ...event,
+      offers: new Set(event.offers),
+      isSaving: false,
+      isDeleting: false,
+      isDisabled: false,
+    };
   }
 
   static parseStateToEvent(state) {
-    return {...state, offers: Array.from(state.offers)};
+    const event = {...state, offers: Array.from(state.offers)};
+
+    delete event.isSaving;
+    delete event.isDeleting;
+    delete event.isDisabled;
+
+    return event;
   }
 }
