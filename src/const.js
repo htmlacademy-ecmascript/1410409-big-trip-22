@@ -1,15 +1,15 @@
-export const DATE_FORMAT_DATE = 'MMM D';
-export const DATE_FORMAT_TIME = 'HH:MM';
-export const DATE_FORMAT_TAG = 'YYYY-MM-DD';
-export const DATE_FORMAT_TAG_FULL = 'YYYY-MM-DDTHH:MM';
-export const DATE_FORMAT_INPUT_DATE = 'DD/MM/YY';
-export const DATE_FORMAT_INPUT_TIME = 'HH:MM';
+const DATE_FORMAT_DATE = 'MMM D';
+const DATE_FORMAT_TIME = 'HH:MM';
+const DATE_FORMAT_TAG = 'YYYY-MM-DD';
+const DATE_FORMAT_TAG_FULL = 'YYYY-MM-DDTHH:MM';
+const DATE_FORMAT_INPUT_DATE = 'DD/MM/YY';
+const DATE_FORMAT_INPUT_TIME = 'HH:MM';
 
-export const MS_IN_MIN = 60000;
-export const MIN_IN_HOUR = 60;
-export const MIN_IN_DAY = 1440;
+const MS_IN_MIN = 60000;
+const MIN_IN_HOUR = 60;
+const MIN_IN_DAY = 1440;
 
-export const EVENT_TYPES = [
+const EVENT_TYPES = [
   'taxi',
   'bus',
   'train',
@@ -21,16 +21,16 @@ export const EVENT_TYPES = [
   'restaurant',
 ];
 
-export const FilterTypes = {
+const FilterTypes = {
   EVERYTHING: 'EVERYTHING',
   PAST: 'PAST',
   PRESENT: 'PRESENT',
   FUTURE: 'FUTURE',
 };
 
-export const DEFAULT_FILTER_TYPE = FilterTypes.EVERYTHING;
+const DEFAULT_FILTER_TYPE = FilterTypes.EVERYTHING;
 
-export const NoEventMessage = {
+const NoEventMessage = {
   [FilterTypes.EVERYTHING]: 'Click New Event to create your first point',
   [FilterTypes.PAST]: 'There are no past events now',
   [FilterTypes.PRESENT]: 'There are no present events now',
@@ -38,12 +38,12 @@ export const NoEventMessage = {
   'SERVER_ERROR': 'Failed to load latest route information',
 };
 
-export const Mode = {
+const Mode = {
   DEFAULT: 'DEFAULT',
   EDITING: 'EDITING'
 };
 
-export const SortType = {
+const SortType = {
   DAY: 'DAY',
   EVENT: 'EVENT',
   TIME: 'TIME',
@@ -51,9 +51,9 @@ export const SortType = {
   OFFERS: 'OFFERS',
 };
 
-export const DEFAULT_SORT_TYPE = SortType.DAY;
+const DEFAULT_SORT_TYPE = SortType.DAY;
 
-export const Sorts = [
+const Sorts = [
   {
     sortType: SortType.DAY,
     isDisabled: false,
@@ -76,20 +76,20 @@ export const Sorts = [
   },
 ];
 
-export const UserAction = {
+const UserAction = {
   UPDATE_EVENT: 'UPDATE_EVENT',
   ADD_EVENT: 'ADD_EVENT',
   DELETE_EVENT: 'DELETE_EVENT',
 };
 
-export const UpdateType = {
+const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
   INIT: 'INIT',
 };
 
-export const DEFAULT_EVENT = {
+const DEFAULT_EVENT = {
   basePrice: 0,
   dateFrom: '',
   dateTo: '',
@@ -99,8 +99,31 @@ export const DEFAULT_EVENT = {
   type: 'flight',
 };
 
-export const TimeLimit = {
+const TimeLimit = {
   LOWER_LIMIT: 350,
   UPPER_LIMIT: 1000,
 };
 
+export {
+  DATE_FORMAT_DATE,
+  DATE_FORMAT_TIME,
+  DATE_FORMAT_TAG,
+  DATE_FORMAT_TAG_FULL,
+  DATE_FORMAT_INPUT_DATE,
+  DATE_FORMAT_INPUT_TIME,
+  MS_IN_MIN,
+  MIN_IN_HOUR,
+  MIN_IN_DAY,
+  EVENT_TYPES,
+  FilterTypes,
+  DEFAULT_FILTER_TYPE,
+  NoEventMessage,
+  Mode,
+  SortType,
+  DEFAULT_SORT_TYPE,
+  Sorts,
+  UserAction,
+  UpdateType,
+  DEFAULT_EVENT,
+  TimeLimit,
+};
