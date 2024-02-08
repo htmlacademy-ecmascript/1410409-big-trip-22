@@ -319,6 +319,7 @@ export default class EditEventView extends AbstractStatefulView {
     }
 
     this.updateElement({type: evt.target.value});
+    this._setState({offers: new Set()});
   };
 
   #changeDestinationHandler = (evt) => {
