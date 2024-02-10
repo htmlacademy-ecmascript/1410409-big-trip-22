@@ -634,6 +634,7 @@ main {
           transform: translate(-50%, -50%) rotate(225deg); }
 
 .event__field-group {
+  position: relative;
   display: -ms-flexbox;
   display: flex;
   -ms-flex-align: center;
@@ -670,6 +671,18 @@ main {
     text-align: center; }
   .event__input--price {
     width: 66px; }
+
+.time-input__error {
+  display: none;
+  position: absolute;
+  top: 33px;
+  left: 11px;
+  font-size: 14px;
+  color: tomato;
+}
+.time-input__error--active {
+  display: inline-block;
+}
 
 .event__save-btn {
   margin-right: 18px; }

@@ -11,8 +11,6 @@ import LoadingView from '../view/loading-view';
 import UiBlocker from '../framework/ui-blocker/ui-blocker';
 
 export default class TripPresenter {
-  #headerElement = null;
-  #filterElement = null;
   #eventsBoardElement = null;
   #tripModel = null;
   #filterModel = null;
@@ -32,15 +30,11 @@ export default class TripPresenter {
   });
 
   constructor({
-    headerElement,
-    filtersElement,
     eventsBoardElement,
     tripModel,
     filterModel,
     onNewEventDestroy,
   }) {
-    this.#headerElement = headerElement;
-    this.#filterElement = filtersElement;
     this.#eventsBoardElement = eventsBoardElement;
     this.#tripModel = tripModel;
     this.#filterModel = filterModel;
@@ -87,6 +81,12 @@ export default class TripPresenter {
     this.#currentSortType = DEFAULT_SORT_TYPE;
     this.#eventPresenters.forEach((eventPresenter) => eventPresenter.closeEditEvent());
     this.#newEventPresenter.init();
+  }
+
+  renderNoEvent() {
+    if (this.events.length === 0) {
+      this.#renderNoEvents();
+    }
   }
 
   #dataChangeHandler = async (actionType, updateType, update) => {
@@ -227,7 +227,6 @@ export default class TripPresenter {
     if (this.#currentSortType === sortType) {
       return;
     }
-
     this.#currentSortType = sortType;
 
     this.#clearBoard();

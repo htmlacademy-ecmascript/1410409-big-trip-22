@@ -1,9 +1,9 @@
 const DATE_FORMAT_DATE = 'MMM D';
-const DATE_FORMAT_TIME = 'HH:MM';
+const DATE_FORMAT_TIME = 'HH:mm';
 const DATE_FORMAT_TAG = 'YYYY-MM-DD';
 const DATE_FORMAT_TAG_FULL = 'YYYY-MM-DDTHH:MM';
 const DATE_FORMAT_INPUT_DATE = 'DD/MM/YY';
-const DATE_FORMAT_INPUT_TIME = 'HH:MM';
+const DATE_FORMAT_INPUT_TIME = 'HH:mm';
 
 const MS_IN_MIN = 60000;
 const MIN_IN_HOUR = 60;
@@ -44,11 +44,11 @@ const Mode = {
 };
 
 const SortType = {
-  DAY: 'DAY',
-  EVENT: 'EVENT',
-  TIME: 'TIME',
-  PRICE: 'PRICE',
-  OFFERS: 'OFFERS',
+  DAY: 'day',
+  EVENT: 'event',
+  TIME: 'time',
+  PRICE: 'price',
+  OFFERS: 'offers',
 };
 
 const DEFAULT_SORT_TYPE = SortType.DAY;
@@ -91,8 +91,8 @@ const UpdateType = {
 
 const DEFAULT_EVENT = {
   basePrice: 0,
-  dateFrom: '',
-  dateTo: '',
+  dateFrom: null,
+  dateTo: null,
   destination: '',
   isFavorite: false,
   offers: [],

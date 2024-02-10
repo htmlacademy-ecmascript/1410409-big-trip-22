@@ -34,6 +34,10 @@ function getDurationTime(dateFrom, dateTo) {
 }
 
 function getFormattedDate(date) {
+  if (!date) {
+    return '';
+  }
+
   return `${dayjs(date).format(DATE_FORMAT_INPUT_DATE)}&nbsp;${dayjs(date).format(DATE_FORMAT_INPUT_TIME)}`;
 }
 

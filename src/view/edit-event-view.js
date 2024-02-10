@@ -19,7 +19,7 @@ function createEventTypeListTemplate(availableTypes) {
     </fieldset>`);
 }
 
-function createDateInputTemplate(eventId, dateFrom, dateTo, isDisabled) {
+function createDateInputTemplate(eventId, dateFrom, dateTo, isDisabled, isEmptyDateInput) {
   return (`
     <div class="event__field-group  event__field-group--time">
       <label class="visually-hidden" for="event-start-time-${eventId}">From</label>
@@ -31,7 +31,6 @@ function createDateInputTemplate(eventId, dateFrom, dateTo, isDisabled) {
       name="event-start-time"
       value=${getFormattedDate(dateFrom)}
       ${isDisabled ? 'disabled' : ''}
-      required
       >
 
       &mdash;
@@ -44,8 +43,11 @@ function createDateInputTemplate(eventId, dateFrom, dateTo, isDisabled) {
       name="event-end-time"
       value=${getFormattedDate(dateTo)}
       ${isDisabled ? 'disabled' : ''}
-      required
       >
+
+      <span class="time-input__error ${isEmptyDateInput ? 'time-input__error--active' : ''}">
+       Нужно обязательно выбрать обе даты
+      </span>
     </div>`);
 }
 
@@ -114,8 +116,8 @@ function createSelectorOfferTemplate(offersByType, checkedOfferIds) {
 }
 
 function createRollupButtonTemplate(id) {
-  if (id === '0') {
-    return;
+  if (typeof id === 'undefined') {
+    return '';
   }
 
   return ('<button class="event__rollup-btn" type="button"><span class="visually-hidden">Close edit event</span></button>');
@@ -153,7 +155,7 @@ function createGalleryTemplate(pictures) {
 }
 
 function createDestinationTemplate(id, destinationData) {
-  if (typeof id === 'undefined' || destinationData.description === '') {
+  if (!destinationData) {
     return '';
   }
 
@@ -180,6 +182,7 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
     isSaving,
     isDeleting,
     isDisabled,
+    isEmptyDateInput,
   } = eventData;
   const destinationData = getItemById(destination, allDestinations);
   const buttonDeleteText = isDeleting ? 'Deleting...' : 'Delete';
@@ -211,7 +214,7 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
 
         ${createDestinationInputTemplate(id, allDestinations, destinationData, type, isDisabled)}
 
-        ${createDateInputTemplate(id, dateFrom, dateTo, isDisabled)}
+        ${createDateInputTemplate(id, dateFrom, dateTo, isDisabled, isEmptyDateInput)}
 
         ${createPriceInputTemplate(id, basePrice, isDisabled)}
 
@@ -289,7 +292,7 @@ export default class EditEventView extends AbstractStatefulView {
 
   _restoreHandlers() {
     this.element.addEventListener('submit', this.#formSubmitHandler);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formResetHandler);
+    this.element.querySelector('.event__rollup-btn')?.addEventListener('click', this.#formResetHandler);
     this.element.querySelector('.event__type-group').addEventListener('click', this.#changeEventTypeHandler);
     this.element.querySelector('.event__available-offers')?.addEventListener('change', this.#changeOffersHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeDestinationHandler);
@@ -310,6 +313,10 @@ export default class EditEventView extends AbstractStatefulView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
+    if (!this._state.dateTo || !this._state.dateFrom) {
+      this.updateElement({isEmptyDateInput: true});
+      return;
+    }
     this.#onFormSubmit(EditEventView.parseStateToEvent(this._state));
   };
 
@@ -328,7 +335,6 @@ export default class EditEventView extends AbstractStatefulView {
     }
 
     const selectedDestination = this.#destinations.find((destination) => destination.name === evt.target.value);
-
     this.updateElement({destination: selectedDestination.id});
   };
 
@@ -402,6 +408,7 @@ export default class EditEventView extends AbstractStatefulView {
       isSaving: false,
       isDeleting: false,
       isDisabled: false,
+      isEmptyDateInput: false
     };
   }
 
@@ -411,6 +418,7 @@ export default class EditEventView extends AbstractStatefulView {
     delete event.isSaving;
     delete event.isDeleting;
     delete event.isDisabled;
+    delete event.isEmptyDateInput;
 
     return event;
   }

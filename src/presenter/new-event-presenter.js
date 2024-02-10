@@ -74,6 +74,7 @@ export default class NewEventPresenter {
     this.#eventEditComponent = null;
 
     document.removeEventListener('keydown', this.#escKeyDownHandler);
+
   }
 
   #formSubmitHandler = (event) => {
