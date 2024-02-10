@@ -5,7 +5,6 @@ import {isNotInput} from '../utils/common';
 
 function createSortElement(sortItem, currentSortType) {
   const {sortType, isDisabled} = sortItem;
-  console.log();
   return (
     `<div class="trip-sort__item  trip-sort__item--${sortType}">
         <input
