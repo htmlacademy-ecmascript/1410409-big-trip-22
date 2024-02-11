@@ -69,7 +69,6 @@ export default class NewEventPresenter {
     }
 
     this.#onDestroy();
-
     remove(this.#eventEditComponent);
     this.#eventEditComponent = null;
 
@@ -83,7 +82,6 @@ export default class NewEventPresenter {
       UpdateType.MINOR,
       event,
     );
-    this.destroy();
   };
 
   #formDeleteHandler = () => {

@@ -1,3 +1,5 @@
+const AUTHORIZATION = 'Basic 11dcsd2cvsdvscl1sa2j';
+const END_POINT = 'https://22.objects.htmlacademy.pro/big-trip';
 const DATE_FORMAT_DATE = 'MMM D';
 const DATE_FORMAT_TIME = 'HH:mm';
 const DATE_FORMAT_TAG = 'YYYY-MM-DD';
@@ -22,10 +24,10 @@ const EVENT_TYPES = [
 ];
 
 const FilterTypes = {
-  EVERYTHING: 'EVERYTHING',
-  PAST: 'PAST',
-  PRESENT: 'PRESENT',
-  FUTURE: 'FUTURE',
+  EVERYTHING: 'everything',
+  PAST: 'past',
+  PRESENT: 'present',
+  FUTURE: 'future',
 };
 
 const DEFAULT_FILTER_TYPE = FilterTypes.EVERYTHING;
@@ -105,6 +107,8 @@ const TimeLimit = {
 };
 
 export {
+  END_POINT,
+  AUTHORIZATION,
   DATE_FORMAT_DATE,
   DATE_FORMAT_TIME,
   DATE_FORMAT_TAG,

@@ -16,6 +16,7 @@ export default class TripPresenter {
   #filterModel = null;
   #sortComponent = null;
   #newEventPresenter = null;
+  #newEventButton = null;
   #currentSortType = DEFAULT_SORT_TYPE;
   #filterType = DEFAULT_FILTER_TYPE;
   #isLoading = true;
@@ -34,11 +35,13 @@ export default class TripPresenter {
     tripModel,
     filterModel,
     onNewEventDestroy,
+    newEventButton,
   }) {
     this.#eventsBoardElement = eventsBoardElement;
     this.#tripModel = tripModel;
     this.#filterModel = filterModel;
     this.#onNewEventDestroy = onNewEventDestroy;
+    this.#newEventButton = newEventButton;
 
     this.#tripModel.addObserver(this.#modelEventHandler);
     this.#filterModel.addObserver(this.#modelEventHandler);
@@ -94,25 +97,25 @@ export default class TripPresenter {
 
     switch (actionType) {
       case UserAction.UPDATE_EVENT:
-        this.#eventPresenters.get(update.id).setSaving();
         try {
+          this.#eventPresenters.get(update.id).setSaving();
           await this.#tripModel.updateEvent(updateType, update);
         } catch (err) {
           this.#eventPresenters.get(update.id).setAborting();
         }
         break;
       case UserAction.ADD_EVENT:
-        this.#newEventPresenter.setSaving();
         try {
-          this.#tripModel.addEvent(updateType, update);
+          this.#newEventPresenter.setSaving();
+          await this.#tripModel.addEvent(updateType, update);
         } catch (err) {
           this.#newEventPresenter.setAborting();
         }
         break;
       case UserAction.DELETE_EVENT:
-        this.#eventPresenters.get(update.id).setDeleting();
         try {
-          this.#tripModel.deleteEvent(updateType, update);
+          this.#eventPresenters.get(update.id).setDeleting();
+          await this.#tripModel.deleteEvent(updateType, update);
         } catch (err) {
           this.#eventPresenters.get(update.id).setAborting();
         }
@@ -153,8 +156,10 @@ export default class TripPresenter {
 
   #renderEvents() {
     render(this.#eventsList, this.#eventsBoardElement);
+    console.log('render event', this.events);
 
     for (const event of this.events) {
+      console.log(event);
       const eventPresenter = new EventPresenter({
         eventsList: this.#eventsList.element,
         offers: this.offers,
@@ -166,6 +171,7 @@ export default class TripPresenter {
       this.#eventPresenters.set(event.id, eventPresenter);
       eventPresenter.init(event);
     }
+    debugger
   }
 
   #renderLoading() {
@@ -189,6 +195,7 @@ export default class TripPresenter {
     }
 
     if (this.#tripModel.serverError) {
+      this.#newEventButton.element.disabled = true;
       this.#renderNoEvents('SERVER_ERROR');
       return;
     }

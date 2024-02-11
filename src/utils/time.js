@@ -27,7 +27,7 @@ function getDurationTime(dateFrom, dateTo) {
   {
     const days = addTwoDigitalFormat(Math.floor(diff / MIN_IN_DAY));
     const hours = addTwoDigitalFormat(Math.floor((diff % MIN_IN_DAY) / MIN_IN_HOUR));
-    const minutes = addTwoDigitalFormat((diff % MIN_IN_DAY) % MIN_IN_HOUR);
+    const minutes = addTwoDigitalFormat(Math.floor((diff % MIN_IN_DAY) % MIN_IN_HOUR));
 
     return `${days}D ${hours}H ${minutes}M`;
   }

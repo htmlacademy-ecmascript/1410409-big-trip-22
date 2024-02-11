@@ -26,6 +26,7 @@ export default class EventPresenter {
 
   init(event) {
     this.#event = event;
+    console.log('event presenter', this.#event);
 
     const prevEventComponent = this.#eventComponent;
     const prevEditEventComponent = this.#editEventComponent;
@@ -50,7 +51,6 @@ export default class EventPresenter {
       },
       onDeleteClick: this.#deleteClickHandler,
     });
-
     if (prevEventComponent === null || prevEditEventComponent === null) {
       render(this.#eventComponent, this.#eventsList);
       return;
@@ -99,8 +99,11 @@ export default class EventPresenter {
         isDeleting: false,
       });
     };
-
     this.#editEventComponent.shake(resetFormState);
+  }
+
+  submitSuccessHandler() {
+    this.#closeEditEventHandler();
   }
 
   closeEditEvent = () => {
@@ -122,7 +125,7 @@ export default class EventPresenter {
   #clickFavoriteHandler = () => {
     this.#onDataChange(
       UserAction.UPDATE_EVENT,
-      UpdateType.MINOR,
+      UpdateType.PATCH,
       {...this.#event, isFavorite: !this.#event.isFavorite}
     );
   };
@@ -157,7 +160,5 @@ export default class EventPresenter {
 
   #submitFormHandler = (event) => {
     this.#onDataChange(UserAction.UPDATE_EVENT, UpdateType.MINOR, event);
-    this.#replaceFormToCard();
-    this.#mode = Mode.DEFAULT;
   };
 }

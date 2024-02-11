@@ -54,7 +54,6 @@ export default class TripModel extends Observable {
   async updateEvent(updateType, update) {
     const index = this.#events.findIndex((event) => event.id === update.id);
     if (index === -1) {
-
       throw new Error('Can\'t update unexisting event');
     }
 
