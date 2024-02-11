@@ -69,11 +69,11 @@ export default class NewEventPresenter {
     }
 
     this.#onDestroy();
-
     remove(this.#eventEditComponent);
     this.#eventEditComponent = null;
 
     document.removeEventListener('keydown', this.#escKeyDownHandler);
+
   }
 
   #formSubmitHandler = (event) => {
@@ -82,7 +82,6 @@ export default class NewEventPresenter {
       UpdateType.MINOR,
       event,
     );
-    this.destroy();
   };
 
   #formDeleteHandler = () => {

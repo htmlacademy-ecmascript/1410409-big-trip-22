@@ -5,19 +5,18 @@ import {isNotInput} from '../utils/common';
 
 function createSortElement(sortItem, currentSortType) {
   const {sortType, isDisabled} = sortItem;
-
   return (
-    `<div class="trip-sort__item  trip-sort__item--${sortType.toLowerCase()}">
+    `<div class="trip-sort__item  trip-sort__item--${sortType}">
         <input
-        id="sort-${sortType.toLowerCase()}"
+        id="sort-${sortType}"
         class="trip-sort__input  visually-hidden"
         type="radio"
         name="trip-sort"
-        value=${sortType.toLowerCase()}
+        value=${sortType}
         ${isDisabled === true ? 'disabled' : ''}
         ${sortType === currentSortType ? 'checked' : ''}
         >
-        <label class="trip-sort__btn" for="sort-${sortType.toLowerCase()}">${sortType.toLowerCase()}</label>
+        <label class="trip-sort__btn" for="sort-${sortType}">${sortType}</label>
       </div>`
   );
 }

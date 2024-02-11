@@ -7,13 +7,13 @@ import {render} from './framework/render';
 
 import 'flatpickr/dist/flatpickr.min.css';
 import TripApiService from './trip-api-service';
-
-const AUTHORIZATION = 'Basic 111144ddcsd2cvsdvscl1sa2j';
-const END_POINT = 'https://22.objects.htmlacademy.pro/big-trip';
+import {AUTHORIZATION, END_POINT} from './const';
 
 const headerElement = document.querySelector('.trip-main');
 const filtersElement = headerElement.querySelector('.trip-controls__filters');
 const eventsBoardElement = document.querySelector('.trip-events');
+
+const newEventButtonComponent = new NewEventButtonView({onClickNewEvent: clickNewEventHandle});
 const tripModel = new TripModel({
   TripApiService: new TripApiService(END_POINT, AUTHORIZATION)
 });
@@ -23,6 +23,7 @@ const tripPresenter = new TripPresenter({
   headerElement,
   filtersElement,
   eventsBoardElement,
+  newEventButton: newEventButtonComponent,
   tripModel,
   filterModel,
   onNewEventDestroy: closeNewEventHandler,
@@ -33,7 +34,7 @@ const filterPresenter = new FilterPresenter({
   filterModel,
   tripModel
 });
-const newEventButtonComponent = new NewEventButtonView({onClickNewEvent: clickNewEventHandle});
+
 
 function clickNewEventHandle() {
   tripPresenter.addNewEvent();
@@ -42,6 +43,7 @@ function clickNewEventHandle() {
 
 function closeNewEventHandler() {
   newEventButtonComponent.element.disabled = false;
+  tripPresenter.renderNoEvent();
 }
 
 filterPresenter.init();

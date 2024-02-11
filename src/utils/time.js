@@ -27,13 +27,17 @@ function getDurationTime(dateFrom, dateTo) {
   {
     const days = addTwoDigitalFormat(Math.floor(diff / MIN_IN_DAY));
     const hours = addTwoDigitalFormat(Math.floor((diff % MIN_IN_DAY) / MIN_IN_HOUR));
-    const minutes = addTwoDigitalFormat((diff % MIN_IN_DAY) % MIN_IN_HOUR);
+    const minutes = addTwoDigitalFormat(Math.floor((diff % MIN_IN_DAY) % MIN_IN_HOUR));
 
     return `${days}D ${hours}H ${minutes}M`;
   }
 }
 
 function getFormattedDate(date) {
+  if (!date) {
+    return '';
+  }
+
   return `${dayjs(date).format(DATE_FORMAT_INPUT_DATE)}&nbsp;${dayjs(date).format(DATE_FORMAT_INPUT_TIME)}`;
 }
 

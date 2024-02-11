@@ -22,7 +22,6 @@ function createOffersListTemplate(offersChecked) {
           </ul>`);
 }
 
-
 function createEventTemplate(event, allOffers, allDestinations) {
   const {
     dateFrom,
@@ -103,8 +102,8 @@ export default class EventView extends AbstractView {
     this.#onClickEdit();
   };
 
-  #favoriteClickHandler = (evt) => {
+  #favoriteClickHandler = async (evt) => {
     evt.preventDefault();
-    this.#onClickFavorite();
+    await this.#onClickFavorite();
   };
 }

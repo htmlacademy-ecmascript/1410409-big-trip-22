@@ -3,7 +3,14 @@ import SortView from '../view/sort-view';
 import {remove, render, RenderPosition} from '../framework/render';
 import NoEventView from '../view/no-event-view';
 import EventPresenter from './event-presenter';
-import {DEFAULT_FILTER_TYPE, DEFAULT_SORT_TYPE, SortType, TimeLimit, UpdateType, UserAction} from '../const';
+import {
+  DEFAULT_FILTER_TYPE,
+  DEFAULT_SORT_TYPE,
+  SortType,
+  TimeLimit,
+  UpdateType,
+  UserAction
+} from '../const';
 import {sortByDay, sortByPrice, sortByTime} from '../utils/event';
 import {filter} from '../utils/filter';
 import NewEventPresenter from './new-event-presenter';
@@ -11,13 +18,12 @@ import LoadingView from '../view/loading-view';
 import UiBlocker from '../framework/ui-blocker/ui-blocker';
 
 export default class TripPresenter {
-  #headerElement = null;
-  #filterElement = null;
   #eventsBoardElement = null;
   #tripModel = null;
   #filterModel = null;
   #sortComponent = null;
   #newEventPresenter = null;
+  #newEventButton = null;
   #currentSortType = DEFAULT_SORT_TYPE;
   #filterType = DEFAULT_FILTER_TYPE;
   #isLoading = true;
@@ -32,19 +38,17 @@ export default class TripPresenter {
   });
 
   constructor({
-    headerElement,
-    filtersElement,
     eventsBoardElement,
     tripModel,
     filterModel,
     onNewEventDestroy,
+    newEventButton,
   }) {
-    this.#headerElement = headerElement;
-    this.#filterElement = filtersElement;
     this.#eventsBoardElement = eventsBoardElement;
     this.#tripModel = tripModel;
     this.#filterModel = filterModel;
     this.#onNewEventDestroy = onNewEventDestroy;
+    this.#newEventButton = newEventButton;
 
     this.#tripModel.addObserver(this.#modelEventHandler);
     this.#filterModel.addObserver(this.#modelEventHandler);
@@ -79,14 +83,14 @@ export default class TripPresenter {
   }
 
   addNewEvent() {
-    if (this.#noEventComponent) {
-      remove(this.#noEventComponent);
-      render(this.#eventsList, this.#eventsBoardElement);
-    }
-
-    this.#currentSortType = DEFAULT_SORT_TYPE;
-    this.#eventPresenters.forEach((eventPresenter) => eventPresenter.closeEditEvent());
+    this.#filterModel.setFilter(UpdateType.MAJOR, DEFAULT_FILTER_TYPE);
     this.#newEventPresenter.init();
+  }
+
+  renderNoEvent() {
+    if (this.events.length === 0) {
+      this.#renderNoEvents();
+    }
   }
 
   #dataChangeHandler = async (actionType, updateType, update) => {
@@ -94,25 +98,25 @@ export default class TripPresenter {
 
     switch (actionType) {
       case UserAction.UPDATE_EVENT:
-        this.#eventPresenters.get(update.id).setSaving();
         try {
+          this.#eventPresenters.get(update.id).setSaving();
           await this.#tripModel.updateEvent(updateType, update);
         } catch (err) {
           this.#eventPresenters.get(update.id).setAborting();
         }
         break;
       case UserAction.ADD_EVENT:
-        this.#newEventPresenter.setSaving();
         try {
-          this.#tripModel.addEvent(updateType, update);
+          this.#newEventPresenter.setSaving();
+          await this.#tripModel.addEvent(updateType, update);
         } catch (err) {
           this.#newEventPresenter.setAborting();
         }
         break;
       case UserAction.DELETE_EVENT:
-        this.#eventPresenters.get(update.id).setDeleting();
         try {
-          this.#tripModel.deleteEvent(updateType, update);
+          this.#eventPresenters.get(update.id).setDeleting();
+          await this.#tripModel.deleteEvent(updateType, update);
         } catch (err) {
           this.#eventPresenters.get(update.id).setAborting();
         }
@@ -189,6 +193,7 @@ export default class TripPresenter {
     }
 
     if (this.#tripModel.serverError) {
+      this.#newEventButton.element.disabled = true;
       this.#renderNoEvents('SERVER_ERROR');
       return;
     }
@@ -227,7 +232,6 @@ export default class TripPresenter {
     if (this.#currentSortType === sortType) {
       return;
     }
-
     this.#currentSortType = sortType;
 
     this.#clearBoard();

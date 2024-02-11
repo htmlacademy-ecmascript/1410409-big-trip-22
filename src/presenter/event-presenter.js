@@ -50,7 +50,6 @@ export default class EventPresenter {
       },
       onDeleteClick: this.#deleteClickHandler,
     });
-
     if (prevEventComponent === null || prevEditEventComponent === null) {
       render(this.#eventComponent, this.#eventsList);
       return;
@@ -99,7 +98,6 @@ export default class EventPresenter {
         isDeleting: false,
       });
     };
-
     this.#editEventComponent.shake(resetFormState);
   }
 
@@ -122,7 +120,7 @@ export default class EventPresenter {
   #clickFavoriteHandler = () => {
     this.#onDataChange(
       UserAction.UPDATE_EVENT,
-      UpdateType.MINOR,
+      UpdateType.PATCH,
       {...this.#event, isFavorite: !this.#event.isFavorite}
     );
   };
@@ -157,7 +155,5 @@ export default class EventPresenter {
 
   #submitFormHandler = (event) => {
     this.#onDataChange(UserAction.UPDATE_EVENT, UpdateType.MINOR, event);
-    this.#replaceFormToCard();
-    this.#mode = Mode.DEFAULT;
   };
 }
