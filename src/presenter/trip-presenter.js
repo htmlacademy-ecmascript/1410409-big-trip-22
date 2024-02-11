@@ -156,10 +156,8 @@ export default class TripPresenter {
 
   #renderEvents() {
     render(this.#eventsList, this.#eventsBoardElement);
-    console.log('render event', this.events);
 
     for (const event of this.events) {
-      console.log(event);
       const eventPresenter = new EventPresenter({
         eventsList: this.#eventsList.element,
         offers: this.offers,
@@ -171,7 +169,6 @@ export default class TripPresenter {
       this.#eventPresenters.set(event.id, eventPresenter);
       eventPresenter.init(event);
     }
-    debugger
   }
 
   #renderLoading() {
