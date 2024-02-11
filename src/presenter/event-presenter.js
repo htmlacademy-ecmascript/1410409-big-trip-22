@@ -101,10 +101,6 @@ export default class EventPresenter {
     this.#editEventComponent.shake(resetFormState);
   }
 
-  submitSuccessHandler() {
-    this.#closeEditEventHandler();
-  }
-
   closeEditEvent = () => {
     if (this.#mode !== Mode.DEFAULT) {
       this.#editEventComponent.reset(this.#event);
