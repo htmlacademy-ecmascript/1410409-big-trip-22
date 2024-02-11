@@ -3,7 +3,14 @@ import SortView from '../view/sort-view';
 import {remove, render, RenderPosition} from '../framework/render';
 import NoEventView from '../view/no-event-view';
 import EventPresenter from './event-presenter';
-import {DEFAULT_FILTER_TYPE, DEFAULT_SORT_TYPE, SortType, TimeLimit, UpdateType, UserAction} from '../const';
+import {
+  DEFAULT_FILTER_TYPE,
+  DEFAULT_SORT_TYPE,
+  SortType,
+  TimeLimit,
+  UpdateType,
+  UserAction
+} from '../const';
 import {sortByDay, sortByPrice, sortByTime} from '../utils/event';
 import {filter} from '../utils/filter';
 import NewEventPresenter from './new-event-presenter';
@@ -76,13 +83,7 @@ export default class TripPresenter {
   }
 
   addNewEvent() {
-    if (this.#noEventComponent) {
-      remove(this.#noEventComponent);
-      render(this.#eventsList, this.#eventsBoardElement);
-    }
-
-    this.#currentSortType = DEFAULT_SORT_TYPE;
-    this.#eventPresenters.forEach((eventPresenter) => eventPresenter.closeEditEvent());
+    this.#filterModel.setFilter(UpdateType.MAJOR, DEFAULT_FILTER_TYPE);
     this.#newEventPresenter.init();
   }
 
