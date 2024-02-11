@@ -25,9 +25,9 @@ const EVENT_TYPES = [
 
 const FilterTypes = {
   EVERYTHING: 'everything',
-  PAST: 'past',
-  PRESENT: 'present',
   FUTURE: 'future',
+  PRESENT: 'present',
+  PAST: 'past',
 };
 
 const DEFAULT_FILTER_TYPE = FilterTypes.EVERYTHING;

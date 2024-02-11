@@ -7,7 +7,7 @@ import he from 'he';
 import {getFormattedDate} from '../utils/time';
 
 
-function createEventTypeListTemplate(availableTypes, currentType) {
+function createEventTypeListTemplate(availableTypes, currentType, isDisabled) {
   return (`
     <fieldset class="event__type-group">
       <legend class="visually-hidden">Event type</legend>
@@ -21,6 +21,7 @@ function createEventTypeListTemplate(availableTypes, currentType) {
         name="event-type"
         value=${type}
         ${type === currentType ? 'checked' : ''}
+        ${isDisabled ? 'disabled' : ''}
         >
         <label
         class="event__type-label  event__type-label--${type}"
@@ -117,7 +118,7 @@ function createDestinationInputTemplate(
   `);
 }
 
-function createSelectorOfferTemplate(offersByType, checkedOfferIds) {
+function createSelectorOfferTemplate(offersByType, checkedOfferIds, isDisabled) {
   if (offersByType.length === 0) {
     return '';
   }
@@ -129,6 +130,7 @@ function createSelectorOfferTemplate(offersByType, checkedOfferIds) {
         type="checkbox"
         name="event-offer-${offer.title}"
         ${checkedOfferIds.has(offer.id) ? 'checked' : ''}
+        ${isDisabled ? 'disabled' : ''}
         >
         <label class="event__offer-label" for=${offer.id}>
           <span class="event__offer-title">${offer.title}</span>
@@ -233,7 +235,7 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
               ${isDisabled ? 'disabled' : ''}
             >
             <div class="event__type-list">
-              ${createEventTypeListTemplate(EVENT_TYPES, type)}
+              ${createEventTypeListTemplate(EVENT_TYPES, type, isDisabled)}
             </div>
           </div>
 
@@ -259,7 +261,7 @@ function createEditEventTemplate(eventData, allOffers, allDestinations) {
         ${createRollupButtonTemplate(id)}
       </header>
       <section class="event__details">
-        ${createOffersTemplate(type, allOffers, offers)}
+        ${createOffersTemplate(type, allOffers, offers, isDisabled)}
         ${createDestinationTemplate(id, destinationData)}
       </section>
     </form>
